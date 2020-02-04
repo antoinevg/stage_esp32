@@ -1,7 +1,7 @@
 [package]
 name = "stage_esp32"
 version = "0.1.0"
-authors = ["Antoine van Gelder <antoine@trigger.io>"]
+authors = ["Antoine van Gelder <antoine@flowdsp.io>"]
 edition = "2018"
 
 
