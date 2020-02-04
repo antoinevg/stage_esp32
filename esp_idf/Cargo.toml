@@ -1,0 +1,8 @@
+[package]
+name = "esp_idf"
+version = "0.1.0"
+authors = ["Antoine van Gelder"]
+edition = "2018"
+
+[dependencies]
+cty = "0.2.1"

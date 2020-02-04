@@ -1,0 +1,22 @@
+[package]
+name = "api"
+version = "0.1.0"
+authors = ["Antoine van Gelder"]
+edition = "2018"
+
+[profile.dev]
+lto = true
+incremental = false
+debug = false
+codegen-units = 1
+
+[profile.release]
+lto = true
+incremental = false
+debug = false
+codegen-units = 1
+
+[dependencies]
+cty       = "0.2.1"
+cstr_core = { git = "https://github.com/antoinevg/cstr_core.git" }
+esp_idf   = { path = "../esp_idf" }

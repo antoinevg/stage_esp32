@@ -1,0 +1,10 @@
+[package]
+name = "stage_esp32"
+version = "0.1.0"
+authors = ["Antoine van Gelder <antoine@trigger.io>"]
+edition = "2018"
+
+
+[dependencies]
+esp_idf = { path = "esp_idf" }
+api     = { path = "api" }
