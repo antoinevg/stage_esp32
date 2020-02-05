@@ -86,7 +86,6 @@ where C: Codec {
                            // TODO use self.config.callback instead
                        })
     }
-
 }
 
 
@@ -121,6 +120,19 @@ pub fn test_callback(fs: f32, num_channels: usize, buffer: &mut Buffer) -> () {
 const PI:  f32 = 3.14159265358979323846264338327950288_f32; // π
 const TAU: f32 = 6.28318530717958647692528676655900576_f32; // 2π
 
+
+fn interpolate_linear(wt: &[f32], index: f32) -> f32 {
+    let wt_len = wt.len();
+    let int_part: usize  = index as usize;
+    let frac_part: f32 = index - int_part as f32;
+    let x0 = int_part;
+    let x1 = (x0 + 1) & (wt_len - 1);
+    let y0 = wt[x0] as f32;
+    let y1 = wt[x1] as f32;
+    (y0 + ((y1 - y0) * frac_part))
+}
+
+
 pub fn test_signal_one(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let dx = f / fs;
     let w = 2. * PI * dx;
@@ -147,7 +159,8 @@ pub fn test_signal_two(fs: f32, f: f32, phase: f32) -> (f32, f32) {
 
 pub fn test_signal_sin(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let wt_index = phase * (wavetable::LENGTH - 1) as f32;
-    let sample = wavetable::SIN[wt_index as usize];
+    //let sample = wavetable::SIN[wt_index as usize];
+    let sample = interpolate_linear(&wavetable::SIN, wt_index);
 
     let dx = f / fs;
     let phase = phase + dx;
@@ -159,7 +172,8 @@ pub fn test_signal_sin(fs: f32, f: f32, phase: f32) -> (f32, f32) {
 
 pub fn test_signal_saw(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let wt_index = phase * (wavetable::LENGTH - 1) as f32;
-    let sample = wavetable::SAW[wt_index as usize];
+    //let sample = wavetable::SAW[wt_index as usize];
+    let sample = interpolate_linear(&wavetable::SAW, wt_index);
 
     let dx = f / fs;
     let phase = phase + dx;
