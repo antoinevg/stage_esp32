@@ -1,7 +1,7 @@
 extern crate alloc;
 use alloc::boxed::Box;
 
-use cty::{c_void, c_uchar, c_float};
+use cty::{c_void};
 
 use esp_idf::bindings as idf;
 use esp_idf::{AsResult, EspError, portMAX_DELAY};
@@ -10,8 +10,9 @@ use crate::i2s;
 use crate::logger;
 use crate::wavetable;
 
-use crate::codec;
-use crate::codec::Driver;
+use crate::codec::Codec;
+use crate::codec::adac;
+use crate::codec::sgtl5000;
 
 
 // - global constants ---------------------------------------------------------
@@ -32,65 +33,6 @@ type DmaBuffer = [u16; BLOCK_SIZE];
 #[repr(C)] pub struct OpaqueInterface { _private: [u8; 0] }
 
 
-// - ffi imports --------------------------------------------------------------
-
-extern "C" {
-    pub fn C_codec_adac_start(opaque_interface_ptr: *const OpaqueInterface,
-                              fs: f32,
-                              num_channels: usize,
-                              word_size: usize,
-                              block_size: usize) -> idf::esp_err_t;
-
-    pub fn C_codec_sgtl5000_start(opaque_interface_ptr: *const OpaqueInterface,
-                                  fs: f32,
-                                  num_channels: usize,
-                                  word_size: usize,
-                                  block_size: usize) -> idf::esp_err_t;
-}
-
-
-// - ffi exports --------------------------------------------------------------
-
-#[no_mangle]
-extern "C" fn RUST_codec_adac_callback(opaque_interface_ptr: *const OpaqueInterface,
-                                       fs: f32,
-                                       num_channels: usize,
-                                       buffer_ptr: *mut c_float,
-                                       buffer_size: usize) {
-    if buffer_size != BLOCK_SIZE {
-        panic!("audio::rust_audio_interface_callback callback buffer size does not match BLOCK_SIZE");
-    }
-
-    unsafe {
-        let buffer = core::mem::transmute::<*mut c_float, &mut Buffer>(buffer_ptr);
-        let interface_ptr = core::mem::transmute::<*const OpaqueInterface,
-                                                   *mut Interface<codec::ADAC>>(opaque_interface_ptr);
-
-        ((*interface_ptr).closure)(fs, num_channels, buffer);
-    }
-}
-
-
-#[no_mangle]
-extern "C" fn RUST_codec_sgtl5000_callback(opaque_interface_ptr: *const OpaqueInterface,
-                                           fs: f32,
-                                           num_channels: usize,
-                                           buffer_ptr: *mut c_float,
-                                           buffer_size: usize) {
-    if buffer_size != BLOCK_SIZE {
-        panic!("audio::rust_audio_interface_callback callback buffer size does not match BLOCK_SIZE");
-    }
-
-    unsafe {
-        let buffer = core::mem::transmute::<*mut c_float, &mut Buffer>(buffer_ptr);
-        let interface_ptr = core::mem::transmute::<*const OpaqueInterface,
-                                                   *mut Interface<codec::SGTL5000>>(opaque_interface_ptr);
-
-        ((*interface_ptr).closure)(fs, num_channels, buffer);
-    }
-}
-
-
 // - audio::Interface ---------------------------------------------------------
 
 #[repr(C)]
@@ -103,15 +45,15 @@ pub struct Config {
 
 
 pub struct Interface<'a, D> {
-    config: Config,
-    driver: D,
-    closure: Box<dyn FnMut(f32, usize, &mut Buffer) + 'a>,
+    pub config: Config,
+    codec: D,
+    pub closure: Box<dyn FnMut(f32, usize, &mut Buffer) + 'a>,
 }
 
 
-impl<'a, D> Interface<'a, D>
-where D: codec::Driver {
-    pub fn new<F: FnMut(f32, usize, &mut Buffer) + 'a>(fs: f32, closure: F) -> Interface<'a, D> {
+impl<'a, C> Interface<'a, C>
+where C: Codec {
+    pub fn new<F: FnMut(f32, usize, &mut Buffer) + 'a>(fs: f32, closure: F) -> Interface<'a, C> {
         Interface {
             config: Config {
                 fs: fs,
@@ -119,19 +61,19 @@ where D: codec::Driver {
                 word_size: 2,
                 block_size: BLOCK_SIZE,
             },
-            driver: D::new(),
+            codec: C::new(),
             closure: Box::new(closure),
         }
     }
 
     pub fn start_c(&self) -> Result<(), EspError> {
         let opaque_interface_ptr = unsafe {
-            core::mem::transmute::<*const Interface<D>,
+            core::mem::transmute::<*const Interface<C>,
                                    *const OpaqueInterface>(self)
         };
 
-        self.driver.init(&self.config)?;
-        self.driver.start_c(&self.config, opaque_interface_ptr)?;
+        self.codec.init(&self.config)?;
+        self.codec.start_c(&self.config, opaque_interface_ptr)?;
         Ok(())
     }
 
