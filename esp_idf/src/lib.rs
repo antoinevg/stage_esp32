@@ -138,3 +138,8 @@ pub fn errno() -> cty::c_int {
 // - misc constants -----------------------------------------------------------
 
 pub const portMAX_DELAY: bindings::TickType_t = 0xffffffff;
+
+pub const portMUX_INITIALIZER_UNLOCKED: bindings::portMUX_TYPE = bindings::portMUX_TYPE {
+    owner: 0xb33f_ffff,
+    count: 0,
+};

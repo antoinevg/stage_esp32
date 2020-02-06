@@ -4,7 +4,7 @@
 
 XTENSA_ROOT=/mnt/flowdsp/deps/versions/rust-xtensa
 IDF_PATH=/mnt/flowdsp/deps/esp-idf
-
+DOT_ESPRESSIF=~/.espressif
 
 # - paths ---------------------------------------------------------------------
 
@@ -19,6 +19,8 @@ ENVPATH="${ENVPATH}:${LLVM_ROOT}/bin"
 IDF_COMPONENTS=${IDF_PATH}/components
 
 INCLUDES="${INCLUDES} -I${LLVM_ROOT}/lib/clang/6.0.1/include"
+
+#INCLUDES="${INCLUDES} -I${DOT_ESPRESSIF}/tools/xtensa-esp32-elf/esp-2019r2-8.2.0/xtensa-esp32-elf/xtensa-esp32-elf/include"
 
 INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/driver/include"
 INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/esp32/include"
