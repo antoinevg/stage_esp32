@@ -47,7 +47,7 @@ INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/vfs/include"
 INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/xtensa/esp32/include"
 INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/xtensa/include"
 
-INCLUDES="${INCLUDES} -I../build/config"
+INCLUDES="${INCLUDES} -I../../xtensa-wallfly.git/build/config" # sdkconfig.h
 
 
 # - generate bindings ---------------------------------------------------------

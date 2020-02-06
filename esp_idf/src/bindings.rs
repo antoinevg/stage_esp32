@@ -1276,17 +1276,12 @@ pub const CONFIG_IDF_CMAKE: u32 = 1;
 pub const CONFIG_IDF_TARGET: &'static [u8; 6usize] = b"esp32\0";
 pub const CONFIG_IDF_FIRMWARE_CHIP_ID: u32 = 0;
 pub const CONFIG_SDK_TOOLPREFIX: &'static [u8; 18usize] = b"xtensa-esp32-elf-\0";
-pub const CONFIG_APP_BUILD_TYPE_APP_2NDBOOT: u32 = 1;
-pub const CONFIG_APP_BUILD_GENERATE_BINARIES: u32 = 1;
-pub const CONFIG_APP_BUILD_BOOTLOADER: u32 = 1;
-pub const CONFIG_APP_BUILD_USE_FLASH_SECTIONS: u32 = 1;
 pub const CONFIG_APP_COMPILE_TIME_DATE: u32 = 1;
 pub const CONFIG_BOOTLOADER_LOG_LEVEL_INFO: u32 = 1;
 pub const CONFIG_BOOTLOADER_LOG_LEVEL: u32 = 3;
 pub const CONFIG_BOOTLOADER_VDDSDIO_BOOST_1_9V: u32 = 1;
 pub const CONFIG_BOOTLOADER_WDT_ENABLE: u32 = 1;
 pub const CONFIG_BOOTLOADER_WDT_TIME_MS: u32 = 9000;
-pub const CONFIG_BOOTLOADER_RESERVE_RTC_SIZE: u32 = 0;
 pub const CONFIG_ESPTOOLPY_BAUD_OTHER_VAL: u32 = 115200;
 pub const CONFIG_ESPTOOLPY_FLASHMODE_DIO: u32 = 1;
 pub const CONFIG_ESPTOOLPY_FLASHMODE: &'static [u8; 4usize] = b"dio\0";
@@ -1307,7 +1302,7 @@ pub const CONFIG_PARTITION_TABLE_CUSTOM_FILENAME: &'static [u8; 15usize] = b"par
 pub const CONFIG_PARTITION_TABLE_FILENAME: &'static [u8; 25usize] = b"partitions_singleapp.csv\0";
 pub const CONFIG_PARTITION_TABLE_OFFSET: u32 = 32768;
 pub const CONFIG_PARTITION_TABLE_MD5: u32 = 1;
-pub const CONFIG_COMPILER_OPTIMIZATION_DEFAULT: u32 = 1;
+pub const CONFIG_COMPILER_OPTIMIZATION_LEVEL_DEBUG: u32 = 1;
 pub const CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_ENABLE: u32 = 1;
 pub const CONFIG_COMPILER_STACK_CHECK_MODE_NONE: u32 = 1;
 pub const CONFIG_ESP32_APPTRACE_DEST_NONE: u32 = 1;
@@ -1319,14 +1314,11 @@ pub const CONFIG_BTDM_CTRL_BR_EDR_MAX_SYNC_CONN_EFF: u32 = 0;
 pub const CONFIG_BTDM_CTRL_PINNED_TO_CORE: u32 = 0;
 pub const CONFIG_BTDM_BLE_SLEEP_CLOCK_ACCURACY_INDEX_EFF: u32 = 1;
 pub const CONFIG_BT_RESERVE_DRAM: u32 = 0;
-pub const CONFIG_COAP_MBEDTLS_PSK: u32 = 1;
-pub const CONFIG_COAP_LOG_DEFAULT_LEVEL: u32 = 0;
 pub const CONFIG_ADC_DISABLE_DAC: u32 = 1;
 pub const CONFIG_SPI_MASTER_ISR_IN_IRAM: u32 = 1;
 pub const CONFIG_SPI_SLAVE_ISR_IN_IRAM: u32 = 1;
 pub const CONFIG_EFUSE_CODE_SCHEME_COMPAT_3_4: u32 = 1;
 pub const CONFIG_EFUSE_MAX_BLK_LEN: u32 = 192;
-pub const CONFIG_ESP_TLS_USING_MBEDTLS: u32 = 1;
 pub const CONFIG_ESP32_REV_MIN_0: u32 = 1;
 pub const CONFIG_ESP32_REV_MIN: u32 = 0;
 pub const CONFIG_ESP32_DPORT_WORKAROUND: u32 = 1;
@@ -1358,7 +1350,6 @@ pub const CONFIG_ESP_SYSTEM_EVENT_QUEUE_SIZE: u32 = 32;
 pub const CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE: u32 = 2304;
 pub const CONFIG_ESP_MAIN_TASK_STACK_SIZE: u32 = 3584;
 pub const CONFIG_ESP_IPC_TASK_STACK_SIZE: u32 = 1024;
-pub const CONFIG_ESP_IPC_USES_CALLERS_PRIORITY: u32 = 1;
 pub const CONFIG_ESP_TIMER_TASK_STACK_SIZE: u32 = 3584;
 pub const CONFIG_ESP_CONSOLE_UART_DEFAULT: u32 = 1;
 pub const CONFIG_ESP_CONSOLE_UART_NUM: u32 = 0;
@@ -1370,21 +1361,15 @@ pub const CONFIG_ESP_TASK_WDT: u32 = 1;
 pub const CONFIG_ESP_TASK_WDT_TIMEOUT_S: u32 = 5;
 pub const CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0: u32 = 1;
 pub const CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1: u32 = 1;
-pub const CONFIG_ETH_ENABLED: u32 = 1;
 pub const CONFIG_ETH_USE_ESP32_EMAC: u32 = 1;
 pub const CONFIG_ETH_PHY_INTERFACE_RMII: u32 = 1;
 pub const CONFIG_ETH_RMII_CLK_INPUT: u32 = 1;
 pub const CONFIG_ETH_RMII_CLK_IN_GPIO: u32 = 0;
-pub const CONFIG_ETH_SMI_MDC_GPIO: u32 = 23;
-pub const CONFIG_ETH_SMI_MDIO_GPIO: u32 = 18;
-pub const CONFIG_ETH_PHY_USE_RST: u32 = 1;
-pub const CONFIG_ETH_PHY_RST_GPIO: u32 = 5;
 pub const CONFIG_ETH_DMA_BUFFER_SIZE: u32 = 512;
 pub const CONFIG_ETH_DMA_RX_BUFFER_NUM: u32 = 10;
 pub const CONFIG_ETH_DMA_TX_BUFFER_NUM: u32 = 10;
 pub const CONFIG_ETH_USE_SPI_ETHERNET: u32 = 1;
 pub const CONFIG_ETH_SPI_ETHERNET_DM9051: u32 = 1;
-pub const CONFIG_ETH_DM9051_INT_GPIO: u32 = 4;
 pub const CONFIG_ESP_EVENT_POST_FROM_ISR: u32 = 1;
 pub const CONFIG_ESP_EVENT_POST_FROM_IRAM_ISR: u32 = 1;
 pub const CONFIG_ESP_HTTP_CLIENT_ENABLE_HTTPS: u32 = 1;
@@ -1392,9 +1377,6 @@ pub const CONFIG_HTTPD_MAX_REQ_HDR_LEN: u32 = 512;
 pub const CONFIG_HTTPD_MAX_URI_LEN: u32 = 512;
 pub const CONFIG_HTTPD_ERR_RESP_NO_DELAY: u32 = 1;
 pub const CONFIG_HTTPD_PURGE_BUF_LEN: u32 = 32;
-pub const CONFIG_ESP_NETIF_IP_LOST_TIMER_INTERVAL: u32 = 120;
-pub const CONFIG_ESP_NETIF_TCPIP_LWIP: u32 = 1;
-pub const CONFIG_ESP_NETIF_TCPIP_ADAPTER_COMPATIBLE_LAYER: u32 = 1;
 pub const CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM: u32 = 10;
 pub const CONFIG_ESP32_WIFI_DYNAMIC_RX_BUFFER_NUM: u32 = 32;
 pub const CONFIG_ESP32_WIFI_DYNAMIC_TX_BUFFER: u32 = 1;
@@ -1450,19 +1432,17 @@ pub const CONFIG_FREERTOS_TIMER_QUEUE_LENGTH: u32 = 10;
 pub const CONFIG_FREERTOS_QUEUE_REGISTRY_SIZE: u32 = 0;
 pub const CONFIG_FREERTOS_TASK_FUNCTION_WRAPPER: u32 = 1;
 pub const CONFIG_FREERTOS_CHECK_MUTEX_GIVEN_BY_OWNER: u32 = 1;
-pub const CONFIG_FREERTOS_DEBUG_OCDAWARE: u32 = 1;
 pub const CONFIG_HEAP_POISONING_DISABLED: u32 = 1;
 pub const CONFIG_HEAP_TRACING_OFF: u32 = 1;
 pub const CONFIG_LOG_DEFAULT_LEVEL_INFO: u32 = 1;
 pub const CONFIG_LOG_DEFAULT_LEVEL: u32 = 3;
 pub const CONFIG_LOG_COLORS: u32 = 1;
-pub const CONFIG_LOG_TIMESTAMP_SOURCE_RTOS: u32 = 1;
 pub const CONFIG_LWIP_LOCAL_HOSTNAME: &'static [u8; 10usize] = b"espressif\0";
-pub const CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES: u32 = 1;
 pub const CONFIG_LWIP_TIMERS_ONDEMAND: u32 = 1;
 pub const CONFIG_LWIP_MAX_SOCKETS: u32 = 10;
 pub const CONFIG_LWIP_SO_REUSE: u32 = 1;
 pub const CONFIG_LWIP_SO_REUSE_RXTOALL: u32 = 1;
+pub const CONFIG_LWIP_IP_FRAG: u32 = 1;
 pub const CONFIG_LWIP_ESP_GRATUITOUS_ARP: u32 = 1;
 pub const CONFIG_LWIP_GARP_TMR_INTERVAL: u32 = 60;
 pub const CONFIG_LWIP_TCPIP_RECVMBOX_SIZE: u32 = 32;
@@ -1476,7 +1456,6 @@ pub const CONFIG_LWIP_MAX_LISTENING_TCP: u32 = 16;
 pub const CONFIG_LWIP_TCP_MAXRTX: u32 = 12;
 pub const CONFIG_LWIP_TCP_SYNMAXRTX: u32 = 6;
 pub const CONFIG_LWIP_TCP_MSS: u32 = 1440;
-pub const CONFIG_LWIP_TCP_TMR_INTERVAL: u32 = 250;
 pub const CONFIG_LWIP_TCP_MSL: u32 = 60000;
 pub const CONFIG_LWIP_TCP_SND_BUF_DEFAULT: u32 = 5744;
 pub const CONFIG_LWIP_TCP_WND_DEFAULT: u32 = 5744;
@@ -1548,11 +1527,6 @@ pub const CONFIG_MBEDTLS_ECP_DP_BP512R1_ENABLED: u32 = 1;
 pub const CONFIG_MBEDTLS_ECP_DP_CURVE25519_ENABLED: u32 = 1;
 pub const CONFIG_MBEDTLS_ECP_NIST_OPTIM: u32 = 1;
 pub const CONFIG_MDNS_MAX_SERVICES: u32 = 10;
-pub const CONFIG_MDNS_TASK_PRIORITY: u32 = 1;
-pub const CONFIG_MDNS_TASK_AFFINITY_CPU0: u32 = 1;
-pub const CONFIG_MDNS_TASK_AFFINITY: u32 = 0;
-pub const CONFIG_MDNS_SERVICE_ADD_TIMEOUT_MS: u32 = 2000;
-pub const CONFIG_MDNS_TIMER_PERIOD_MS: u32 = 100;
 pub const CONFIG_MQTT_PROTOCOL_311: u32 = 1;
 pub const CONFIG_MQTT_TRANSPORT_SSL: u32 = 1;
 pub const CONFIG_MQTT_TRANSPORT_WEBSOCKET: u32 = 1;
@@ -1581,6 +1555,8 @@ pub const CONFIG_SPIFFS_USE_MAGIC: u32 = 1;
 pub const CONFIG_SPIFFS_USE_MAGIC_LENGTH: u32 = 1;
 pub const CONFIG_SPIFFS_META_LENGTH: u32 = 4;
 pub const CONFIG_SPIFFS_USE_MTIME: u32 = 1;
+pub const CONFIG_NETIF_IP_LOST_TIMER_INTERVAL: u32 = 120;
+pub const CONFIG_TCPIP_LWIP: u32 = 1;
 pub const CONFIG_UNITY_ENABLE_FLOAT: u32 = 1;
 pub const CONFIG_UNITY_ENABLE_DOUBLE: u32 = 1;
 pub const CONFIG_UNITY_ENABLE_IDF_TEST_RUNNER: u32 = 1;
@@ -1594,12 +1570,18 @@ pub const CONFIG_WIFI_PROV_SCAN_MAX_ENTRIES: u32 = 16;
 pub const CONFIG_WPA_MBEDTLS_CRYPTO: u32 = 1;
 pub const CONFIG_ADC2_DISABLE_DAC: u32 = 1;
 pub const CONFIG_BROWNOUT_DET: u32 = 1;
+pub const CONFIG_BROWNOUT_DET_LVL: u32 = 0;
 pub const CONFIG_BROWNOUT_DET_LVL_SEL_0: u32 = 1;
-pub const CONFIG_COMPILER_OPTIMIZATION_LEVEL_DEBUG: u32 = 1;
+pub const CONFIG_BTDM_CONTROLLER_BLE_MAX_CONN_EFF: u32 = 0;
+pub const CONFIG_BTDM_CONTROLLER_BR_EDR_MAX_ACL_CONN_EFF: u32 = 0;
+pub const CONFIG_BTDM_CONTROLLER_BR_EDR_MAX_SYNC_CONN_EFF: u32 = 0;
+pub const CONFIG_BTDM_CONTROLLER_PINNED_TO_CORE: u32 = 0;
 pub const CONFIG_CONSOLE_UART_BAUDRATE: u32 = 115200;
 pub const CONFIG_CONSOLE_UART_DEFAULT: u32 = 1;
+pub const CONFIG_CONSOLE_UART_NUM: u32 = 0;
 pub const CONFIG_ESP32_DEFAULT_PTHREAD_CORE_NO_AFFINITY: u32 = 1;
 pub const CONFIG_ESP32_PTHREAD_STACK_MIN: u32 = 768;
+pub const CONFIG_ESP32_PTHREAD_TASK_CORE_DEFAULT: i32 = -1;
 pub const CONFIG_ESP32_PTHREAD_TASK_NAME_DEFAULT: &'static [u8; 8usize] = b"pthread\0";
 pub const CONFIG_ESP32_PTHREAD_TASK_PRIO_DEFAULT: u32 = 5;
 pub const CONFIG_ESP32_PTHREAD_TASK_STACK_SIZE_DEFAULT: u32 = 3072;
@@ -1612,6 +1594,8 @@ pub const CONFIG_INT_WDT: u32 = 1;
 pub const CONFIG_INT_WDT_CHECK_CPU1: u32 = 1;
 pub const CONFIG_INT_WDT_TIMEOUT_MS: u32 = 300;
 pub const CONFIG_IPC_TASK_STACK_SIZE: u32 = 1024;
+pub const CONFIG_IP_LOST_TIMER_INTERVAL: u32 = 120;
+pub const CONFIG_LOG_BOOTLOADER_LEVEL: u32 = 3;
 pub const CONFIG_LOG_BOOTLOADER_LEVEL_INFO: u32 = 1;
 pub const CONFIG_MAIN_TASK_STACK_SIZE: u32 = 3584;
 pub const CONFIG_MB_CONTROLLER_NOTIFY_QUEUE_SIZE: u32 = 20;
@@ -1627,7 +1611,10 @@ pub const CONFIG_MB_SERIAL_TASK_STACK_SIZE: u32 = 2048;
 pub const CONFIG_MB_TIMER_GROUP: u32 = 0;
 pub const CONFIG_MB_TIMER_INDEX: u32 = 0;
 pub const CONFIG_MB_TIMER_PORT_ENABLED: u32 = 1;
+pub const CONFIG_MONITOR_BAUD: u32 = 115200;
 pub const CONFIG_MONITOR_BAUD_115200B: u32 = 1;
+pub const CONFIG_MONITOR_BAUD_OTHER_VAL: u32 = 115200;
+pub const CONFIG_NUMBER_OF_UNIVERSAL_MAC_ADDRESS: u32 = 4;
 pub const CONFIG_OPTIMIZATION_ASSERTIONS_ENABLED: u32 = 1;
 pub const CONFIG_OPTIMIZATION_LEVEL_DEBUG: u32 = 1;
 pub const CONFIG_POST_EVENTS_FROM_IRAM_ISR: u32 = 1;
@@ -1644,6 +1631,7 @@ pub const CONFIG_TASK_WDT_CHECK_IDLE_TASK_CPU0: u32 = 1;
 pub const CONFIG_TASK_WDT_CHECK_IDLE_TASK_CPU1: u32 = 1;
 pub const CONFIG_TASK_WDT_TIMEOUT_S: u32 = 5;
 pub const CONFIG_TCPIP_RECVMBOX_SIZE: u32 = 32;
+pub const CONFIG_TCPIP_TASK_AFFINITY: u32 = 2147483647;
 pub const CONFIG_TCPIP_TASK_AFFINITY_NO_AFFINITY: u32 = 1;
 pub const CONFIG_TCPIP_TASK_STACK_SIZE: u32 = 3072;
 pub const CONFIG_TCP_MAXRTX: u32 = 12;
@@ -1660,7 +1648,9 @@ pub const CONFIG_TIMER_TASK_PRIORITY: u32 = 1;
 pub const CONFIG_TIMER_TASK_STACK_DEPTH: u32 = 2048;
 pub const CONFIG_TIMER_TASK_STACK_SIZE: u32 = 3584;
 pub const CONFIG_TOOLPREFIX: &'static [u8; 18usize] = b"xtensa-esp32-elf-\0";
+pub const CONFIG_TRACEMEM_RESERVE_DRAM: u32 = 0;
 pub const CONFIG_UDP_RECVMBOX_SIZE: u32 = 6;
+pub const CONFIG_ULP_COPROC_RESERVE_MEM: u32 = 0;
 pub const portNUM_PROCESSORS: u32 = 2;
 pub const XT_USE_THREAD_SAFE_CLIB: u32 = 0;
 pub const configASSERT_2: u32 = 0;
@@ -2663,8 +2653,6 @@ pub const XT_CPENABLE: u32 = 0;
 pub const XT_CPSTORED: u32 = 2;
 pub const XT_CP_CS_ST: u32 = 4;
 pub const XT_CP_ASA: u32 = 8;
-pub const CORE_ID_REGVAL_PRO: u32 = 52685;
-pub const CORE_ID_REGVAL_APP: u32 = 43947;
 pub const CORE_ID_PRO: u32 = 52685;
 pub const CORE_ID_APP: u32 = 43947;
 pub const STK_INTEXC_EXTRA: u32 = 0;
@@ -2875,7 +2863,7 @@ pub const BIT2: u32 = 4;
 pub const BIT1: u32 = 2;
 pub const BIT0: u32 = 1;
 pub const ESP_IDF_VERSION_MAJOR: u32 = 4;
-pub const ESP_IDF_VERSION_MINOR: u32 = 1;
+pub const ESP_IDF_VERSION_MINOR: u32 = 0;
 pub const ESP_IDF_VERSION_PATCH: u32 = 0;
 pub const TWO_UNIVERSAL_MAC_ADDR: u32 = 2;
 pub const FOUR_UNIVERSAL_MAC_ADDR: u32 = 4;
@@ -2890,6 +2878,7 @@ pub const MEMP_NUM_TCP_PCB: u32 = 16;
 pub const MEMP_NUM_TCP_PCB_LISTEN: u32 = 16;
 pub const MEMP_NUM_UDP_PCB: u32 = 16;
 pub const ARP_QUEUEING: u32 = 1;
+pub const IP_FRAG: u32 = 1;
 pub const IP_REASS_MAXAGE: u32 = 3;
 pub const IP_REASS_MAX_PBUFS: u32 = 10;
 pub const LWIP_RAW: u32 = 1;
@@ -2902,7 +2891,6 @@ pub const DNS_MAX_SERVERS: u32 = 3;
 pub const DNS_FALLBACK_SERVER_INDEX: u32 = 2;
 pub const TCP_QUEUE_OOSEQ: u32 = 1;
 pub const TCP_MSS: u32 = 1440;
-pub const TCP_TMR_INTERVAL: u32 = 250;
 pub const TCP_MSL: u32 = 60000;
 pub const TCP_MAXRTX: u32 = 12;
 pub const TCP_SYNMAXRTX: u32 = 6;
@@ -2927,7 +2915,6 @@ pub const LWIP_SO_SNDTIMEO: u32 = 1;
 pub const LWIP_SO_RCVTIMEO: u32 = 1;
 pub const LWIP_TCP_KEEPALIVE: u32 = 1;
 pub const SO_REUSE: u32 = 1;
-pub const LWIP_DNS_SUPPORT_MDNS_QUERIES: u32 = 1;
 pub const SO_REUSE_RXTOALL: u32 = 1;
 pub const LWIP_IPV6: u32 = 1;
 pub const LWIP_POSIX_SOCKETS_IO_NAMES: u32 = 0;
@@ -2956,6 +2943,7 @@ pub const ESP_PPP: u32 = 1;
 pub const ESP_IPV6: u32 = 1;
 pub const ESP_SOCKET: u32 = 1;
 pub const ESP_LWIP_SELECT: u32 = 1;
+pub const ESP_LWIP_LOCK: u32 = 1;
 pub const ESP_LWIP_IGMP_TIMERS_ONDEMAND: u32 = 1;
 pub const ESP_LWIP_MLD6_TIMERS_ONDEMAND: u32 = 1;
 pub const TCP_SND_BUF: u32 = 5744;
@@ -3135,7 +3123,6 @@ pub const tskKERNEL_VERSION_MAJOR: u32 = 8;
 pub const tskKERNEL_VERSION_MINOR: u32 = 2;
 pub const tskKERNEL_VERSION_BUILD: u32 = 0;
 pub const tskNO_AFFINITY: u32 = 2147483647;
-pub const ERR_NEED_SCHED: u32 = 123;
 pub const LWIP_COMPAT_MUTEX: u32 = 0;
 pub const BYTE_ORDER: u32 = 1234;
 pub const S16_F: &'static [u8; 2usize] = b"d\0";
@@ -3240,9 +3227,11 @@ pub const LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING: u32 = 2;
 pub const LWIP_DNS_SECURE_RAND_SRC_PORT: u32 = 4;
 pub const DNS_LOCAL_HOSTLIST: u32 = 0;
 pub const DNS_LOCAL_HOSTLIST_IS_DYNAMIC: u32 = 0;
+pub const LWIP_DNS_SUPPORT_MDNS_QUERIES: u32 = 0;
 pub const LWIP_UDP: u32 = 1;
 pub const LWIP_UDPLITE: u32 = 0;
 pub const UDP_TTL: u32 = 255;
+pub const LWIP_NETBUF_RECVINFO: u32 = 0;
 pub const LWIP_TCP: u32 = 1;
 pub const TCP_TTL: u32 = 255;
 pub const LWIP_TCP_SACK_OUT: u32 = 0;
@@ -3500,24 +3489,13 @@ pub const WIFI_PROMIS_CTRL_FILTER_MASK_CFEND: u32 = 1073741824;
 pub const WIFI_PROMIS_CTRL_FILTER_MASK_CFENDACK: u32 = 2147483648;
 pub const WIFI_EVENT_MASK_ALL: u32 = 4294967295;
 pub const WIFI_EVENT_MASK_NONE: u32 = 0;
-pub const IPSTR: &'static [u8; 12usize] = b"%d.%d.%d.%d\0";
-pub const IPV6STR: &'static [u8; 40usize] = b"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\0";
-pub const ESP_IPADDR_TYPE_V4: u32 = 0;
-pub const ESP_IPADDR_TYPE_V6: u32 = 6;
-pub const ESP_IPADDR_TYPE_ANY: u32 = 46;
-pub const ESP_ERR_ESP_NETIF_BASE: u32 = 20480;
-pub const ESP_ERR_ESP_NETIF_INVALID_PARAMS: u32 = 20481;
-pub const ESP_ERR_ESP_NETIF_IF_NOT_READY: u32 = 20482;
-pub const ESP_ERR_ESP_NETIF_DHCPC_START_FAILED: u32 = 20483;
-pub const ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED: u32 = 20484;
-pub const ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED: u32 = 20485;
-pub const ESP_ERR_ESP_NETIF_NO_MEM: u32 = 20486;
-pub const ESP_ERR_ESP_NETIF_DHCP_NOT_STOPPED: u32 = 20487;
-pub const ESP_ERR_ESP_NETIF_DRIVER_ATTACH_FAILED: u32 = 20488;
 pub const DHCPS_COARSE_TIMER_SECS: u32 = 1;
 pub const DHCPS_MAX_LEASE: u32 = 100;
 pub const DHCPS_LEASE_TIME_DEF: u32 = 120;
 pub const DHCPS_LEASE_UNIT: u32 = 60;
+pub const IPSTR: &'static [u8; 12usize] = b"%d.%d.%d.%d\0";
+pub const IPV6STR: &'static [u8; 40usize] = b"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\0";
+pub const ESP_ERR_TCPIP_ADAPTER_BASE: u32 = 20480;
 pub const ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS: u32 = 20481;
 pub const ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY: u32 = 20482;
 pub const ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED: u32 = 20483;
@@ -3525,6 +3503,7 @@ pub const ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STARTED: u32 = 20484;
 pub const ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED: u32 = 20485;
 pub const ESP_ERR_TCPIP_ADAPTER_NO_MEM: u32 = 20486;
 pub const ESP_ERR_TCPIP_ADAPTER_DHCP_NOT_STOPPED: u32 = 20487;
+pub const TCPIP_HOSTNAME_MAX_SIZE: u32 = 32;
 pub const LOG_LOCAL_LEVEL: u32 = 3;
 pub const LOG_COLOR_BLACK: &'static [u8; 3usize] = b"30\0";
 pub const LOG_COLOR_RED: &'static [u8; 3usize] = b"31\0";
@@ -3600,6 +3579,18 @@ pub const ETS_INTERNAL_INTR_SOURCE_OFF: u32 = 6;
 pub const GPIO_PIN_COUNT: u32 = 40;
 pub const PRO_CPU_NUM: u32 = 0;
 pub const APP_CPU_NUM: u32 = 1;
+pub const SOC_IROM_LOW: u32 = 1074593792;
+pub const SOC_IROM_HIGH: u32 = 1077936128;
+pub const SOC_DROM_LOW: u32 = 1061158912;
+pub const SOC_DROM_HIGH: u32 = 1065353216;
+pub const SOC_DRAM_LOW: u32 = 1073405952;
+pub const SOC_DRAM_HIGH: u32 = 1073741824;
+pub const SOC_RTC_IRAM_LOW: u32 = 1074528256;
+pub const SOC_RTC_IRAM_HIGH: u32 = 1074536448;
+pub const SOC_RTC_DATA_LOW: u32 = 1342177280;
+pub const SOC_RTC_DATA_HIGH: u32 = 1342185472;
+pub const SOC_EXTRAM_DATA_LOW: u32 = 1065353216;
+pub const SOC_EXTRAM_DATA_HIGH: u32 = 1069547520;
 pub const SOC_MAX_CONTIGUOUS_RAM_SIZE: u32 = 4194304;
 pub const DR_REG_DPORT_BASE: u32 = 1072693248;
 pub const DR_REG_AES_BASE: u32 = 1072697344;
@@ -3667,12 +3658,6 @@ pub const TIMER_CLK_FREQ: u32 = 5000000;
 pub const SPI_CLK_DIV: u32 = 4;
 pub const TICKS_PER_US_ROM: u32 = 26;
 pub const GPIO_MATRIX_DELAY_NS: u32 = 25;
-pub const SOC_DROM_LOW: u32 = 1061158912;
-pub const SOC_DROM_HIGH: u32 = 1065353216;
-pub const SOC_DRAM_LOW: u32 = 1073405952;
-pub const SOC_DRAM_HIGH: u32 = 1073741824;
-pub const SOC_IROM_LOW: u32 = 1074593792;
-pub const SOC_IROM_HIGH: u32 = 1077936128;
 pub const SOC_IROM_MASK_LOW: u32 = 1073741824;
 pub const SOC_IROM_MASK_HIGH: u32 = 1074200576;
 pub const SOC_CACHE_PRO_LOW: u32 = 1074200576;
@@ -3681,18 +3666,12 @@ pub const SOC_CACHE_APP_LOW: u32 = 1074233344;
 pub const SOC_CACHE_APP_HIGH: u32 = 1074266112;
 pub const SOC_IRAM_LOW: u32 = 1074266112;
 pub const SOC_IRAM_HIGH: u32 = 1074397184;
-pub const SOC_RTC_IRAM_LOW: u32 = 1074528256;
-pub const SOC_RTC_IRAM_HIGH: u32 = 1074536448;
 pub const SOC_RTC_DRAM_LOW: u32 = 1073217536;
 pub const SOC_RTC_DRAM_HIGH: u32 = 1073225728;
-pub const SOC_RTC_DATA_LOW: u32 = 1342177280;
-pub const SOC_RTC_DATA_HIGH: u32 = 1342185472;
-pub const SOC_EXTRAM_DATA_LOW: u32 = 1065353216;
-pub const SOC_EXTRAM_DATA_HIGH: u32 = 1069547520;
 pub const SOC_DIRAM_IRAM_LOW: u32 = 1074397184;
-pub const SOC_DIRAM_IRAM_HIGH: u32 = 1074528256;
+pub const SOC_DIRAM_IRAM_HIGH: u32 = 1074528252;
 pub const SOC_DIRAM_DRAM_LOW: u32 = 1073610752;
-pub const SOC_DIRAM_DRAM_HIGH: u32 = 1073741824;
+pub const SOC_DIRAM_DRAM_HIGH: u32 = 1073741820;
 pub const SOC_DMA_LOW: u32 = 1073405952;
 pub const SOC_DMA_HIGH: u32 = 1073741824;
 pub const SOC_BYTE_ACCESSIBLE_LOW: u32 = 1073283072;
@@ -3768,7 +3747,6 @@ pub const ETS_TG1_LACT_EDGE_INTR_SOURCE: u32 = 65;
 pub const ETS_MMU_IA_INTR_SOURCE: u32 = 66;
 pub const ETS_MPU_IA_INTR_SOURCE: u32 = 67;
 pub const ETS_CACHE_IA_INTR_SOURCE: u32 = 68;
-pub const ETS_MAX_INTR_SOURCE: u32 = 69;
 pub const ETS_WMAC_INUM: u32 = 0;
 pub const ETS_BT_HOST_INUM: u32 = 1;
 pub const ETS_WBB_INUM: u32 = 4;
@@ -3807,12 +3785,6 @@ pub const MCU_SEL: u32 = 7;
 pub const MCU_SEL_V: u32 = 7;
 pub const MCU_SEL_S: u32 = 12;
 pub const PIN_FUNC_GPIO: u32 = 2;
-pub const SPI_CLK_GPIO_NUM: u32 = 6;
-pub const SPI_CS0_GPIO_NUM: u32 = 11;
-pub const SPI_Q_GPIO_NUM: u32 = 7;
-pub const SPI_D_GPIO_NUM: u32 = 8;
-pub const SPI_WP_GPIO_NUM: u32 = 10;
-pub const SPI_HD_GPIO_NUM: u32 = 9;
 pub const PIN_CTRL: u32 = 1072992256;
 pub const CLK_OUT3: u32 = 15;
 pub const CLK_OUT3_V: u32 = 15;
@@ -8221,8 +8193,6 @@ pub const I2S_TX_IDLE_S: u32 = 0;
 pub const I2S_I2SDATE: u32 = 4294967295;
 pub const I2S_I2SDATE_V: u32 = 4294967295;
 pub const I2S_I2SDATE_S: u32 = 0;
-pub const SOC_I2S_PERIPH_NUM: u32 = 2;
-pub const SOC_I2S_SUPPORT_PDM: u32 = 1;
 pub const RTC_GPIO_OUT_REG: u32 = 1072989184;
 pub const RTC_GPIO_OUT_DATA: u32 = 262143;
 pub const RTC_GPIO_OUT_DATA_V: u32 = 262143;
@@ -9747,7 +9717,6 @@ pub const RTC_CNTL_CNTL_DATE: u32 = 268435455;
 pub const RTC_CNTL_CNTL_DATE_V: u32 = 268435455;
 pub const RTC_CNTL_CNTL_DATE_S: u32 = 0;
 pub const RTC_CNTL_RTC_CNTL_DATE_VERSION: u32 = 23085696;
-pub const RTC_GPIO_NUMBER: u32 = 18;
 pub const RTCIO_GPIO36_CHANNEL: u32 = 0;
 pub const RTCIO_CHANNEL_0_GPIO_NUM: u32 = 36;
 pub const RTCIO_GPIO37_CHANNEL: u32 = 1;
@@ -9811,18 +9780,14 @@ pub const LLDESC_LENGTH_SHIFT: u32 = 12;
 pub const LLDESC_SIZE_MASK: u32 = 4095;
 pub const LLDESC_SIZE_SHIFT: u32 = 0;
 pub const LLDESC_ADDR_MASK: u32 = 1048575;
-pub const LLDESC_MAX_NUM_PER_DESC: u32 = 4092;
 pub const SOC_SPI_PERIPH_NUM: u32 = 3;
 pub const SOC_SPI_DMA_CHAN_NUM: u32 = 2;
-pub const SPI_PERIPH_NUM: u32 = 3;
-pub const SPI_FUNC_NUM: u32 = 1;
 pub const SPI_IOMUX_PIN_NUM_MISO: u32 = 7;
 pub const SPI_IOMUX_PIN_NUM_MOSI: u32 = 8;
 pub const SPI_IOMUX_PIN_NUM_CLK: u32 = 6;
 pub const SPI_IOMUX_PIN_NUM_CS: u32 = 11;
 pub const SPI_IOMUX_PIN_NUM_WP: u32 = 10;
 pub const SPI_IOMUX_PIN_NUM_HD: u32 = 9;
-pub const HSPI_FUNC_NUM: u32 = 1;
 pub const SPI_D2WD_PIN_NUM_MISO: u32 = 17;
 pub const SPI_D2WD_PIN_NUM_MOSI: u32 = 8;
 pub const SPI_D2WD_PIN_NUM_CLK: u32 = 6;
@@ -9835,7 +9800,6 @@ pub const HSPI_IOMUX_PIN_NUM_CLK: u32 = 14;
 pub const HSPI_IOMUX_PIN_NUM_CS: u32 = 15;
 pub const HSPI_IOMUX_PIN_NUM_WP: u32 = 2;
 pub const HSPI_IOMUX_PIN_NUM_HD: u32 = 4;
-pub const VSPI_FUNC_NUM: u32 = 1;
 pub const VSPI_IOMUX_PIN_NUM_MISO: u32 = 19;
 pub const VSPI_IOMUX_PIN_NUM_MOSI: u32 = 23;
 pub const VSPI_IOMUX_PIN_NUM_CLK: u32 = 18;
@@ -10455,7 +10419,6 @@ pub const SPI_DEVICE_POSITIVE_CS: u32 = 8;
 pub const SPI_DEVICE_HALFDUPLEX: u32 = 16;
 pub const SPI_DEVICE_CLK_AS_CS: u32 = 32;
 pub const SPI_DEVICE_NO_DUMMY: u32 = 64;
-pub const SPI_DEVICE_DDRCLK: u32 = 128;
 pub const SPI_TRANS_MODE_DIO: u32 = 1;
 pub const SPI_TRANS_MODE_QIO: u32 = 2;
 pub const SPI_TRANS_USE_RXDATA: u32 = 4;
@@ -10464,7 +10427,6 @@ pub const SPI_TRANS_MODE_DIOQIO_ADDR: u32 = 16;
 pub const SPI_TRANS_VARIABLE_CMD: u32 = 32;
 pub const SPI_TRANS_VARIABLE_ADDR: u32 = 64;
 pub const SPI_TRANS_VARIABLE_DUMMY: u32 = 128;
-pub const SPI_TRANS_SET_CD: u32 = 128;
 pub const POLLIN: u32 = 1;
 pub const POLLRDNORM: u32 = 2;
 pub const POLLRDBAND: u32 = 4;
@@ -15495,7 +15457,7 @@ extern "C" {
     pub fn esp_fill_random(buf: *mut std::os::raw::c_void, len: usize);
 }
 extern "C" {
-    pub fn esp_base_mac_addr_set(mac: *const u8) -> esp_err_t;
+    pub fn esp_base_mac_addr_set(mac: *mut u8) -> esp_err_t;
 }
 extern "C" {
     pub fn esp_base_mac_addr_get(mac: *mut u8) -> esp_err_t;
@@ -15516,7 +15478,6 @@ extern "C" {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum esp_chip_model_t {
     CHIP_ESP32 = 1,
-    CHIP_ESP32S2BETA = 2,
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -15573,7 +15534,7 @@ extern "C" {
     pub fn dhcp_ip_addr_store(netif: *mut std::os::raw::c_void);
 }
 extern "C" {
-    pub fn dhcp_ip_addr_erase(esp_netif: *mut std::os::raw::c_void);
+    pub fn dhcp_ip_addr_erase(netif: *mut std::os::raw::c_void);
 }
 pub type TaskFunction_t =
     ::core::option::Option<unsafe extern "C" fn(arg1: *mut std::os::raw::c_void)>;
@@ -15877,9 +15838,6 @@ extern "C" {
     pub fn heap_caps_calloc(n: usize, size: usize, caps: u32) -> *mut std::os::raw::c_void;
 }
 extern "C" {
-    pub fn heap_caps_get_total_size(caps: u32) -> usize;
-}
-extern "C" {
     pub fn heap_caps_get_free_size(caps: u32) -> usize;
 }
 extern "C" {
@@ -15930,9 +15888,6 @@ extern "C" {
 }
 extern "C" {
     pub fn heap_caps_dump_all();
-}
-extern "C" {
-    pub fn heap_caps_get_allocated_size(ptr: *mut std::os::raw::c_void) -> usize;
 }
 pub type StackType_t = u8;
 pub type BaseType_t = std::os::raw::c_int;
@@ -17596,18 +17551,6 @@ extern "C" {
 extern "C" {
     pub static mut esp_flash_default_chip: *mut esp_flash_t;
 }
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum spi_flash_wrap_mode_t {
-    FLASH_WRAP_MODE_8B = 0,
-    FLASH_WRAP_MODE_16B = 2,
-    FLASH_WRAP_MODE_32B = 4,
-    FLASH_WRAP_MODE_64B = 6,
-    FLASH_WRAP_MODE_DISABLE = 1,
-}
-extern "C" {
-    pub fn spi_flash_wrap_set(mode: spi_flash_wrap_mode_t) -> esp_err_t;
-}
 extern "C" {
     pub fn spi_flash_init();
 }
@@ -17693,9 +17636,6 @@ extern "C" {
 }
 extern "C" {
     pub fn spi_flash_cache_enabled() -> bool;
-}
-extern "C" {
-    pub fn spi_flash_enable_cache(cpuid: u32);
 }
 pub type spi_flash_guard_start_func_t = ::core::option::Option<unsafe extern "C" fn()>;
 pub type spi_flash_guard_end_func_t = ::core::option::Option<unsafe extern "C" fn()>;
@@ -19032,7 +18972,6 @@ pub enum wifi_event_t {
     WIFI_EVENT_AP_STACONNECTED = 14,
     WIFI_EVENT_AP_STADISCONNECTED = 15,
     WIFI_EVENT_AP_PROBEREQRECVED = 16,
-    WIFI_EVENT_MAX = 17,
 }
 extern "C" {
     pub static mut WIFI_EVENT: esp_event_base_t;
@@ -19106,281 +19045,6 @@ pub struct wifi_event_ap_stadisconnected_t {
 pub struct wifi_event_ap_probe_req_rx_t {
     pub rssi: std::os::raw::c_int,
     pub mac: [u8; 6usize],
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct esp_ip6_addr {
-    pub addr: [u32; 4usize],
-    pub zone: u8,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct esp_ip4_addr {
-    pub addr: u32,
-}
-pub type esp_ip4_addr_t = esp_ip4_addr;
-pub type esp_ip6_addr_t = esp_ip6_addr;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _ip_addr {
-    pub u_addr: _ip_addr__bindgen_ty_1,
-    pub type_: u8,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _ip_addr__bindgen_ty_1 {
-    pub ip6: esp_ip6_addr_t,
-    pub ip4: esp_ip4_addr_t,
-    _bindgen_union_align: [u32; 5usize],
-}
-impl Default for _ip_addr__bindgen_ty_1 {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-impl ::core::fmt::Debug for _ip_addr__bindgen_ty_1 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        write!(f, "_ip_addr__bindgen_ty_1 {{ union }}")
-    }
-}
-impl Default for _ip_addr {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-impl ::core::fmt::Debug for _ip_addr {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        write!(
-            f,
-            "_ip_addr {{ u_addr: {:?}, type: {:?} }}",
-            self.u_addr, self.type_
-        )
-    }
-}
-pub type esp_ip_addr_t = _ip_addr;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct esp_netif_obj {
-    _unused: [u8; 0],
-}
-pub type esp_netif_t = esp_netif_obj;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum esp_netif_dns_type_t {
-    ESP_NETIF_DNS_MAIN = 0,
-    ESP_NETIF_DNS_BACKUP = 1,
-    ESP_NETIF_DNS_FALLBACK = 2,
-    ESP_NETIF_DNS_MAX = 3,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct esp_netif_dns_info_t {
-    pub ip: esp_ip_addr_t,
-}
-impl Default for esp_netif_dns_info_t {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-impl ::core::fmt::Debug for esp_netif_dns_info_t {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        write!(f, "esp_netif_dns_info_t {{ ip: {:?} }}", self.ip)
-    }
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum esp_netif_dhcp_status_t {
-    ESP_NETIF_DHCP_INIT = 0,
-    ESP_NETIF_DHCP_STARTED = 1,
-    ESP_NETIF_DHCP_STOPPED = 2,
-    ESP_NETIF_DHCP_STATUS_MAX = 3,
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum esp_netif_dhcp_option_mode_t {
-    ESP_NETIF_OP_START = 0,
-    ESP_NETIF_OP_SET = 1,
-    ESP_NETIF_OP_GET = 2,
-    ESP_NETIF_OP_MAX = 3,
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum esp_netif_dhcp_option_id_t {
-    ESP_NETIF_DOMAIN_NAME_SERVER = 6,
-    ESP_NETIF_ROUTER_SOLICITATION_ADDRESS = 32,
-    ESP_NETIF_REQUESTED_IP_ADDRESS = 50,
-    ESP_NETIF_IP_ADDRESS_LEASE_TIME = 51,
-    ESP_NETIF_IP_REQUEST_RETRY_TIME = 52,
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum ip_event_t {
-    IP_EVENT_STA_GOT_IP = 0,
-    IP_EVENT_STA_LOST_IP = 1,
-    IP_EVENT_AP_STAIPASSIGNED = 2,
-    IP_EVENT_GOT_IP6 = 3,
-    IP_EVENT_ETH_GOT_IP = 4,
-}
-extern "C" {
-    pub static mut IP_EVENT: esp_event_base_t;
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_ip_info_t {
-    pub ip: esp_ip4_addr_t,
-    pub netmask: esp_ip4_addr_t,
-    pub gw: esp_ip4_addr_t,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_ip6_info_t {
-    pub ip: esp_ip6_addr_t,
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct ip_event_got_ip_t {
-    pub if_index: std::os::raw::c_int,
-    pub esp_netif: *mut esp_netif_t,
-    pub ip_info: esp_netif_ip_info_t,
-    pub ip_changed: bool,
-}
-impl Default for ip_event_got_ip_t {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct ip_event_got_ip6_t {
-    pub if_index: std::os::raw::c_int,
-    pub esp_netif: *mut esp_netif_t,
-    pub ip6_info: esp_netif_ip6_info_t,
-}
-impl Default for ip_event_got_ip6_t {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct ip_event_ap_staipassigned_t {
-    pub ip: esp_ip4_addr_t,
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum esp_netif_flags {
-    ESP_NETIF_DHCP_CLIENT = 1,
-    ESP_NETIF_DHCP_SERVER = 2,
-    ESP_NETIF_FLAG_AUTOUP = 4,
-    ESP_NETIF_FLAG_GARP = 8,
-    ESP_NETIF_FLAG_EVENT_IP_MODIFIED = 16,
-}
-pub use self::esp_netif_flags as esp_netif_flags_t;
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum esp_netif_ip_event_type {
-    ESP_NETIF_IP_EVENT_GOT_IP = 1,
-    ESP_NETIF_IP_EVENT_LOST_IP = 2,
-}
-pub use self::esp_netif_ip_event_type as esp_netif_ip_event_type_t;
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_inherent_config {
-    pub flags: esp_netif_flags_t,
-    pub mac: [u8; 6usize],
-    pub ip_info: *mut esp_netif_ip_info_t,
-    pub get_ip_event: u32,
-    pub lost_ip_event: u32,
-    pub if_key: *const std::os::raw::c_char,
-    pub if_desc: *const std::os::raw::c_char,
-    pub route_prio: std::os::raw::c_int,
-}
-impl Default for esp_netif_inherent_config {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-pub type esp_netif_inherent_config_t = esp_netif_inherent_config;
-pub type esp_netif_config_t = esp_netif_config;
-pub type esp_netif_iodriver_handle = *mut std::os::raw::c_void;
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_driver_base_s {
-    pub post_attach: ::core::option::Option<
-        unsafe extern "C" fn(netif: *mut esp_netif_t, h: esp_netif_iodriver_handle) -> esp_err_t,
-    >,
-    pub netif: *mut esp_netif_t,
-}
-impl Default for esp_netif_driver_base_s {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-pub type esp_netif_driver_base_t = esp_netif_driver_base_s;
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_driver_ifconfig {
-    pub handle: esp_netif_iodriver_handle,
-    pub transmit: ::core::option::Option<
-        unsafe extern "C" fn(
-            h: *mut std::os::raw::c_void,
-            buffer: *mut std::os::raw::c_void,
-            len: usize,
-        ) -> esp_err_t,
-    >,
-    pub driver_free_rx_buffer: ::core::option::Option<
-        unsafe extern "C" fn(h: *mut std::os::raw::c_void, buffer: *mut std::os::raw::c_void),
-    >,
-}
-impl Default for esp_netif_driver_ifconfig {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-pub type esp_netif_driver_ifconfig_t = esp_netif_driver_ifconfig;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct esp_netif_netstack_config {
-    _unused: [u8; 0],
-}
-pub type esp_netif_netstack_config_t = esp_netif_netstack_config;
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_config {
-    pub base: *const esp_netif_inherent_config_t,
-    pub driver: *const esp_netif_driver_ifconfig_t,
-    pub stack: *const esp_netif_netstack_config_t,
-}
-impl Default for esp_netif_config {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-pub type esp_netif_receive_t = ::core::option::Option<
-    unsafe extern "C" fn(
-        esp_netif: *mut esp_netif_t,
-        buffer: *mut std::os::raw::c_void,
-        len: usize,
-        eb: *mut std::os::raw::c_void,
-    ) -> esp_err_t,
->;
-extern "C" {
-    pub static mut _g_esp_netif_netstack_default_eth: *const esp_netif_netstack_config_t;
-}
-extern "C" {
-    pub static mut _g_esp_netif_netstack_default_wifi_sta: *const esp_netif_netstack_config_t;
-}
-extern "C" {
-    pub static mut _g_esp_netif_netstack_default_wifi_ap: *const esp_netif_netstack_config_t;
-}
-extern "C" {
-    pub static _g_esp_netif_inherent_sta_config: esp_netif_inherent_config_t;
-}
-extern "C" {
-    pub static _g_esp_netif_inherent_ap_config: esp_netif_inherent_config_t;
-}
-extern "C" {
-    pub static _g_esp_netif_inherent_eth_config: esp_netif_inherent_config_t;
 }
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -19492,23 +19156,30 @@ extern "C" {
 extern "C" {
     pub fn dhcps_set_new_lease_cb(cb: dhcps_cb_t);
 }
+pub type tcpip_adapter_dhcps_lease_t = dhcps_lease_t;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_sta_info_t {
+pub struct tcpip_adapter_ip_info_t {
+    pub ip: ip4_addr_t,
+    pub netmask: ip4_addr_t,
+    pub gw: ip4_addr_t,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub struct tcpip_adapter_ip6_info_t {
+    pub ip: ip6_addr_t,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub struct tcpip_adapter_sta_info_t {
     pub mac: [u8; 6usize],
-    pub ip: esp_ip4_addr_t,
+    pub ip: ip4_addr_t,
 }
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct esp_netif_sta_list_t {
-    pub sta: [esp_netif_sta_info_t; 10usize],
+pub struct tcpip_adapter_sta_list_t {
+    pub sta: [tcpip_adapter_sta_info_t; 10usize],
     pub num: std::os::raw::c_int,
-}
-extern "C" {
-    pub fn esp_netif_get_sta_list(
-        wifi_sta_list: *const wifi_sta_list_t,
-        netif_sta_list: *mut esp_netif_sta_list_t,
-    ) -> esp_err_t;
 }
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -19519,149 +19190,98 @@ pub enum tcpip_adapter_if_t {
     TCPIP_ADAPTER_IF_TEST = 3,
     TCPIP_ADAPTER_IF_MAX = 4,
 }
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum tcpip_adapter_dns_type_t {
+    TCPIP_ADAPTER_DNS_MAIN = 0,
+    TCPIP_ADAPTER_DNS_BACKUP = 1,
+    TCPIP_ADAPTER_DNS_FALLBACK = 2,
+    TCPIP_ADAPTER_DNS_MAX = 3,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct tcpip_adapter_dns_info_t {
+    pub ip: ip_addr_t,
+}
+impl Default for tcpip_adapter_dns_info_t {
+    fn default() -> Self {
+        unsafe { ::core::mem::zeroed() }
+    }
+}
+impl ::core::fmt::Debug for tcpip_adapter_dns_info_t {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        write!(f, "tcpip_adapter_dns_info_t {{ ip: {:?} }}", self.ip)
+    }
+}
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum tcpip_adapter_dhcp_status_t {
+    TCPIP_ADAPTER_DHCP_INIT = 0,
+    TCPIP_ADAPTER_DHCP_STARTED = 1,
+    TCPIP_ADAPTER_DHCP_STOPPED = 2,
+    TCPIP_ADAPTER_DHCP_STATUS_MAX = 3,
+}
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum tcpip_adapter_dhcp_option_mode_t {
+    TCPIP_ADAPTER_OP_START = 0,
+    TCPIP_ADAPTER_OP_SET = 1,
+    TCPIP_ADAPTER_OP_GET = 2,
+    TCPIP_ADAPTER_OP_MAX = 3,
+}
+pub use self::tcpip_adapter_dhcp_option_mode_t as tcpip_adapter_option_mode_t;
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum tcpip_adapter_dhcp_option_id_t {
+    TCPIP_ADAPTER_DOMAIN_NAME_SERVER = 6,
+    TCPIP_ADAPTER_ROUTER_SOLICITATION_ADDRESS = 32,
+    TCPIP_ADAPTER_REQUESTED_IP_ADDRESS = 50,
+    TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME = 51,
+    TCPIP_ADAPTER_IP_REQUEST_RETRY_TIME = 52,
+}
+pub use self::tcpip_adapter_dhcp_option_id_t as tcpip_adapter_option_id_t;
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum ip_event_t {
+    IP_EVENT_STA_GOT_IP = 0,
+    IP_EVENT_STA_LOST_IP = 1,
+    IP_EVENT_AP_STAIPASSIGNED = 2,
+    IP_EVENT_GOT_IP6 = 3,
+    IP_EVENT_ETH_GOT_IP = 4,
+}
+extern "C" {
+    pub static mut IP_EVENT: esp_event_base_t;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct ip_event_got_ip_t {
+    pub if_index: tcpip_adapter_if_t,
+    pub ip_info: tcpip_adapter_ip_info_t,
+    pub ip_changed: bool,
+}
+impl Default for ip_event_got_ip_t {
+    fn default() -> Self {
+        unsafe { ::core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct ip_event_got_ip6_t {
+    pub if_index: tcpip_adapter_if_t,
+    pub ip6_info: tcpip_adapter_ip6_info_t,
+}
+impl Default for ip_event_got_ip6_t {
+    fn default() -> Self {
+        unsafe { ::core::mem::zeroed() }
+    }
+}
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct tcpip_adapter_ip_info_t {
+pub struct ip_event_ap_staipassigned_t {
     pub ip: ip4_addr_t,
-    pub netmask: ip4_addr_t,
-    pub gw: ip4_addr_t,
 }
-pub use self::esp_netif_dhcp_status_t as tcpip_adapter_dhcp_status_t;
-pub type tcpip_adapter_dhcps_lease_t = dhcps_lease_t;
-pub use self::esp_netif_dhcp_option_id_t as tcpip_adapter_dhcp_option_id_t;
-pub use self::esp_netif_dhcp_option_mode_t as tcpip_adapter_dhcp_option_mode_t;
-pub use self::esp_netif_dns_type_t as tcpip_adapter_dns_type_t;
-pub type tcpip_adapter_dns_info_t = esp_netif_dns_info_t;
-pub type tcpip_adapter_sta_list_t = esp_netif_sta_list_t;
-pub type tcpip_adapter_sta_info_t = esp_netif_sta_info_t;
 extern "C" {
     pub fn tcpip_adapter_init();
-}
-extern "C" {
-    pub fn tcpip_adapter_if_from_esp_netif(esp_netif: *mut esp_netif_t) -> tcpip_adapter_if_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_get_ip_info(
-        tcpip_if: tcpip_adapter_if_t,
-        ip_info: *mut tcpip_adapter_ip_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_get_ip6_linklocal(
-        tcpip_if: tcpip_adapter_if_t,
-        if_ip6: *mut ip6_addr_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcpc_get_status(
-        tcpip_if: tcpip_adapter_if_t,
-        status: *mut tcpip_adapter_dhcp_status_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_is_netif_up(tcpip_if: tcpip_adapter_if_t) -> bool;
-}
-extern "C" {
-    pub fn tcpip_adapter_get_netif(
-        tcpip_if: tcpip_adapter_if_t,
-        netif: *mut *mut std::os::raw::c_void,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_create_ip6_linklocal(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_set_default_eth_handlers() -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_eth_input(
-        buffer: *mut std::os::raw::c_void,
-        len: u16,
-        eb: *mut std::os::raw::c_void,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_sta_input(
-        buffer: *mut std::os::raw::c_void,
-        len: u16,
-        eb: *mut std::os::raw::c_void,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_ap_input(
-        buffer: *mut std::os::raw::c_void,
-        len: u16,
-        eb: *mut std::os::raw::c_void,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_clear_default_wifi_handlers() -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_clear_default_eth_handlers() -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcps_stop(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcpc_stop(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcps_start(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcpc_start(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcps_get_status(
-        tcpip_if: tcpip_adapter_if_t,
-        status: *mut tcpip_adapter_dhcp_status_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcps_option(
-        opt_op: tcpip_adapter_dhcp_option_mode_t,
-        opt_id: tcpip_adapter_dhcp_option_id_t,
-        opt_val: *mut std::os::raw::c_void,
-        opt_len: u32,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_dhcpc_option(
-        opt_op: tcpip_adapter_dhcp_option_mode_t,
-        opt_id: tcpip_adapter_dhcp_option_id_t,
-        opt_val: *mut std::os::raw::c_void,
-        opt_len: u32,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_set_ip_info(
-        tcpip_if: tcpip_adapter_if_t,
-        ip_info: *const tcpip_adapter_ip_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_get_dns_info(
-        tcpip_if: tcpip_adapter_if_t,
-        type_: tcpip_adapter_dns_type_t,
-        dns: *mut tcpip_adapter_dns_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_set_dns_info(
-        tcpip_if: tcpip_adapter_if_t,
-        type_: tcpip_adapter_dns_type_t,
-        dns: *mut tcpip_adapter_dns_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn tcpip_adapter_get_netif_index(tcpip_if: tcpip_adapter_if_t) -> std::os::raw::c_int;
-}
-extern "C" {
-    pub fn tcpip_adapter_get_sta_list(
-        wifi_sta_list: *const wifi_sta_list_t,
-        tcpip_sta_list: *mut tcpip_adapter_sta_list_t,
-    ) -> esp_err_t;
 }
 extern "C" {
     pub fn tcpip_adapter_eth_start(
@@ -19690,6 +19310,32 @@ extern "C" {
     pub fn tcpip_adapter_down(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
 }
 extern "C" {
+    pub fn tcpip_adapter_get_ip_info(
+        tcpip_if: tcpip_adapter_if_t,
+        ip_info: *mut tcpip_adapter_ip_info_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_set_ip_info(
+        tcpip_if: tcpip_adapter_if_t,
+        ip_info: *const tcpip_adapter_ip_info_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_set_dns_info(
+        tcpip_if: tcpip_adapter_if_t,
+        type_: tcpip_adapter_dns_type_t,
+        dns: *mut tcpip_adapter_dns_info_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_get_dns_info(
+        tcpip_if: tcpip_adapter_if_t,
+        type_: tcpip_adapter_dns_type_t,
+        dns: *mut tcpip_adapter_dns_info_t,
+    ) -> esp_err_t;
+}
+extern "C" {
     pub fn tcpip_adapter_get_old_ip_info(
         tcpip_if: tcpip_adapter_if_t,
         ip_info: *mut tcpip_adapter_ip_info_t,
@@ -19702,7 +19348,83 @@ extern "C" {
     ) -> esp_err_t;
 }
 extern "C" {
+    pub fn tcpip_adapter_create_ip6_linklocal(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_get_ip6_linklocal(
+        tcpip_if: tcpip_adapter_if_t,
+        if_ip6: *mut ip6_addr_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcps_get_status(
+        tcpip_if: tcpip_adapter_if_t,
+        status: *mut tcpip_adapter_dhcp_status_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcps_option(
+        opt_op: tcpip_adapter_dhcp_option_mode_t,
+        opt_id: tcpip_adapter_dhcp_option_id_t,
+        opt_val: *mut std::os::raw::c_void,
+        opt_len: u32,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcps_start(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcps_stop(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcpc_get_status(
+        tcpip_if: tcpip_adapter_if_t,
+        status: *mut tcpip_adapter_dhcp_status_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcpc_option(
+        opt_op: tcpip_adapter_dhcp_option_mode_t,
+        opt_id: tcpip_adapter_dhcp_option_id_t,
+        opt_val: *mut std::os::raw::c_void,
+        opt_len: u32,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcpc_start(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_dhcpc_stop(tcpip_if: tcpip_adapter_if_t) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_eth_input(
+        buffer: *mut std::os::raw::c_void,
+        len: u16,
+        eb: *mut std::os::raw::c_void,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_sta_input(
+        buffer: *mut std::os::raw::c_void,
+        len: u16,
+        eb: *mut std::os::raw::c_void,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_ap_input(
+        buffer: *mut std::os::raw::c_void,
+        len: u16,
+        eb: *mut std::os::raw::c_void,
+    ) -> esp_err_t;
+}
+extern "C" {
     pub fn tcpip_adapter_get_esp_if(dev: *mut std::os::raw::c_void) -> esp_interface_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_get_sta_list(
+        wifi_sta_list: *const wifi_sta_list_t,
+        tcpip_sta_list: *mut tcpip_adapter_sta_list_t,
+    ) -> esp_err_t;
 }
 extern "C" {
     pub fn tcpip_adapter_set_hostname(
@@ -19717,230 +19439,34 @@ extern "C" {
     ) -> esp_err_t;
 }
 extern "C" {
+    pub fn tcpip_adapter_get_netif(
+        tcpip_if: tcpip_adapter_if_t,
+        netif: *mut *mut std::os::raw::c_void,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_is_netif_up(tcpip_if: tcpip_adapter_if_t) -> bool;
+}
+extern "C" {
+    pub fn tcpip_adapter_test_start(
+        mac: *mut u8,
+        ip_info: *mut tcpip_adapter_ip_info_t,
+    ) -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_set_default_eth_handlers() -> esp_err_t;
+}
+extern "C" {
+    pub fn tcpip_adapter_clear_default_eth_handlers() -> esp_err_t;
+}
+extern "C" {
     pub fn tcpip_adapter_set_default_wifi_handlers() -> esp_err_t;
 }
 extern "C" {
-    pub fn esp_netif_init() -> esp_err_t;
+    pub fn tcpip_adapter_clear_default_wifi_handlers() -> esp_err_t;
 }
 extern "C" {
-    pub fn esp_netif_deinit() -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_new(esp_netif_config: *const esp_netif_config_t) -> *mut esp_netif_t;
-}
-extern "C" {
-    pub fn esp_netif_destroy(esp_netif: *mut esp_netif_t);
-}
-extern "C" {
-    pub fn esp_netif_set_driver_config(
-        esp_netif: *mut esp_netif_t,
-        driver_config: *const esp_netif_driver_ifconfig_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_attach(
-        esp_netif: *mut esp_netif_t,
-        driver_handle: esp_netif_iodriver_handle,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_receive(
-        esp_netif: *mut esp_netif_t,
-        buffer: *mut std::os::raw::c_void,
-        len: usize,
-        eb: *mut std::os::raw::c_void,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_action_start(
-        esp_netif: *mut std::os::raw::c_void,
-        base: esp_event_base_t,
-        event_id: i32,
-        data: *mut std::os::raw::c_void,
-    );
-}
-extern "C" {
-    pub fn esp_netif_action_stop(
-        esp_netif: *mut std::os::raw::c_void,
-        base: esp_event_base_t,
-        event_id: i32,
-        data: *mut std::os::raw::c_void,
-    );
-}
-extern "C" {
-    pub fn esp_netif_action_connected(
-        esp_netif: *mut std::os::raw::c_void,
-        base: esp_event_base_t,
-        event_id: i32,
-        data: *mut std::os::raw::c_void,
-    );
-}
-extern "C" {
-    pub fn esp_netif_action_disconnected(
-        esp_netif: *mut std::os::raw::c_void,
-        base: esp_event_base_t,
-        event_id: i32,
-        data: *mut std::os::raw::c_void,
-    );
-}
-extern "C" {
-    pub fn esp_netif_action_got_ip(
-        esp_netif: *mut std::os::raw::c_void,
-        base: esp_event_base_t,
-        event_id: i32,
-        data: *mut std::os::raw::c_void,
-    );
-}
-extern "C" {
-    pub fn esp_netif_set_mac(esp_netif: *mut esp_netif_t, mac: *mut [u8; 0usize]) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_set_hostname(
-        esp_netif: *mut esp_netif_t,
-        hostname: *const std::os::raw::c_char,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_get_hostname(
-        esp_netif: *mut esp_netif_t,
-        hostname: *mut *const std::os::raw::c_char,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_is_netif_up(esp_netif: *mut esp_netif_t) -> bool;
-}
-extern "C" {
-    pub fn esp_netif_get_ip_info(
-        esp_netif: *mut esp_netif_t,
-        ip_info: *mut esp_netif_ip_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_get_old_ip_info(
-        esp_netif: *mut esp_netif_t,
-        ip_info: *mut esp_netif_ip_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_set_ip_info(
-        esp_netif: *mut esp_netif_t,
-        ip_info: *const esp_netif_ip_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_set_old_ip_info(
-        esp_netif: *mut esp_netif_t,
-        ip_info: *const esp_netif_ip_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_get_netif_impl_index(esp_netif: *mut esp_netif_t) -> std::os::raw::c_int;
-}
-extern "C" {
-    pub fn esp_netif_dhcps_option(
-        esp_netif: *mut esp_netif_t,
-        opt_op: esp_netif_dhcp_option_mode_t,
-        opt_id: esp_netif_dhcp_option_id_t,
-        opt_val: *mut std::os::raw::c_void,
-        opt_len: u32,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcpc_option(
-        esp_netif: *mut esp_netif_t,
-        opt_op: esp_netif_dhcp_option_mode_t,
-        opt_id: esp_netif_dhcp_option_id_t,
-        opt_val: *mut std::os::raw::c_void,
-        opt_len: u32,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcpc_start(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcpc_stop(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcpc_get_status(
-        esp_netif: *mut esp_netif_t,
-        status: *mut esp_netif_dhcp_status_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcps_get_status(
-        esp_netif: *mut esp_netif_t,
-        status: *mut esp_netif_dhcp_status_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcps_start(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_dhcps_stop(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_set_dns_info(
-        esp_netif: *mut esp_netif_t,
-        type_: esp_netif_dns_type_t,
-        dns: *mut esp_netif_dns_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_get_dns_info(
-        esp_netif: *mut esp_netif_t,
-        type_: esp_netif_dns_type_t,
-        dns: *mut esp_netif_dns_info_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_create_ip6_linklocal(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_get_ip6_linklocal(
-        esp_netif: *mut esp_netif_t,
-        if_ip6: *mut esp_ip6_addr_t,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_set_ip4_addr(addr: *mut esp_ip4_addr_t, a: u8, b: u8, c: u8, d: u8);
-}
-extern "C" {
-    pub fn esp_ip4addr_ntoa(
-        addr: *const esp_ip4_addr_t,
-        buf: *mut std::os::raw::c_char,
-        buflen: std::os::raw::c_int,
-    ) -> *mut std::os::raw::c_char;
-}
-extern "C" {
-    pub fn esp_ip4addr_aton(addr: *const std::os::raw::c_char) -> u32;
-}
-extern "C" {
-    pub fn esp_netif_get_io_driver(esp_netif: *mut esp_netif_t) -> esp_netif_iodriver_handle;
-}
-extern "C" {
-    pub fn esp_netif_get_handle_from_ifkey(if_key: *const std::os::raw::c_char)
-        -> *mut esp_netif_t;
-}
-extern "C" {
-    pub fn esp_netif_get_flags(esp_netif: *mut esp_netif_t) -> esp_netif_flags_t;
-}
-extern "C" {
-    pub fn esp_netif_get_ifkey(esp_netif: *mut esp_netif_t) -> *const std::os::raw::c_char;
-}
-extern "C" {
-    pub fn esp_netif_get_desc(esp_netif: *mut esp_netif_t) -> *const std::os::raw::c_char;
-}
-extern "C" {
-    pub fn esp_netif_get_event_id(
-        esp_netif: *mut esp_netif_t,
-        event_type: esp_netif_ip_event_type_t,
-    ) -> i32;
-}
-extern "C" {
-    pub fn esp_netif_next(esp_netif: *mut esp_netif_t) -> *mut esp_netif_t;
-}
-extern "C" {
-    pub fn esp_netif_get_nr_of_ifs() -> usize;
+    pub fn tcpip_adapter_get_netif_index(tcpip_if: tcpip_adapter_if_t) -> std::os::raw::c_int;
 }
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -20032,26 +19558,10 @@ impl ::core::fmt::Debug for system_event_t {
         )
     }
 }
-pub type system_event_handler_t = ::core::option::Option<
-    unsafe extern "C" fn(
-        event_base: esp_event_base_t,
-        event_id: i32,
-        event_data: *mut std::os::raw::c_void,
-        event_data_size: usize,
-        ticks_to_wait: TickType_t,
-    ) -> esp_err_t,
->;
+pub type system_event_handler_t =
+    ::core::option::Option<unsafe extern "C" fn(event: *mut system_event_t) -> esp_err_t>;
 extern "C" {
     pub fn esp_event_send(event: *mut system_event_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_event_send_internal(
-        event_base: esp_event_base_t,
-        event_id: i32,
-        event_data: *mut std::os::raw::c_void,
-        event_data_size: usize,
-        ticks_to_wait: TickType_t,
-    ) -> esp_err_t;
 }
 extern "C" {
     pub fn esp_event_process_default(event: *mut system_event_t) -> esp_err_t;
@@ -20209,9 +19719,6 @@ extern "C" {
 }
 extern "C" {
     pub fn esp_log_timestamp() -> u32;
-}
-extern "C" {
-    pub fn esp_log_system_timestamp() -> *mut std::os::raw::c_char;
 }
 extern "C" {
     pub fn esp_log_early_timestamp() -> u32;
@@ -20667,6 +20174,8 @@ pub struct wifi_osi_funcs_t {
     pub _dport_access_stall_other_cpu_end_wrap: ::core::option::Option<unsafe extern "C" fn()>,
     pub _phy_rf_deinit: ::core::option::Option<unsafe extern "C" fn(module: u32) -> i32>,
     pub _phy_load_cal_and_init: ::core::option::Option<unsafe extern "C" fn(module: u32)>,
+    pub _phy_common_clock_enable: ::core::option::Option<unsafe extern "C" fn()>,
+    pub _phy_common_clock_disable: ::core::option::Option<unsafe extern "C" fn()>,
     pub _read_mac: ::core::option::Option<unsafe extern "C" fn(mac: *mut u8, type_: u32) -> i32>,
     pub _timer_arm: ::core::option::Option<
         unsafe extern "C" fn(timer: *mut std::os::raw::c_void, tmout: u32, repeat: bool),
@@ -20805,35 +20314,6 @@ pub struct wifi_osi_funcs_t {
 }
 extern "C" {
     pub static mut g_wifi_osi_funcs: wifi_osi_funcs_t;
-}
-extern "C" {
-    pub fn esp_netif_attach_wifi_station(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_attach_wifi_ap(esp_netif: *mut esp_netif_t) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_wifi_set_default_wifi_sta_handlers() -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_wifi_set_default_wifi_ap_handlers() -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_wifi_clear_default_wifi_driver_and_handlers(
-        esp_netif: *mut std::os::raw::c_void,
-    ) -> esp_err_t;
-}
-extern "C" {
-    pub fn esp_netif_create_default_wifi_ap() -> *mut esp_netif_t;
-}
-extern "C" {
-    pub fn esp_netif_create_default_wifi_sta() -> *mut esp_netif_t;
-}
-extern "C" {
-    pub fn esp_netif_create_default_wifi_mesh_netifs(
-        p_netif_sta: *mut *mut esp_netif_t,
-        p_netif_ap: *mut *mut esp_netif_t,
-    ) -> esp_err_t;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -23675,45 +23155,6 @@ extern "C" {
         tx_trans_mode: *mut i2c_trans_mode_t,
         rx_trans_mode: *mut i2c_trans_mode_t,
     ) -> esp_err_t;
-}
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum periph_module_t {
-    PERIPH_LEDC_MODULE = 0,
-    PERIPH_UART0_MODULE = 1,
-    PERIPH_UART1_MODULE = 2,
-    PERIPH_UART2_MODULE = 3,
-    PERIPH_I2C0_MODULE = 4,
-    PERIPH_I2C1_MODULE = 5,
-    PERIPH_I2S0_MODULE = 6,
-    PERIPH_I2S1_MODULE = 7,
-    PERIPH_TIMG0_MODULE = 8,
-    PERIPH_TIMG1_MODULE = 9,
-    PERIPH_PWM0_MODULE = 10,
-    PERIPH_PWM1_MODULE = 11,
-    PERIPH_PWM2_MODULE = 12,
-    PERIPH_PWM3_MODULE = 13,
-    PERIPH_UHCI0_MODULE = 14,
-    PERIPH_UHCI1_MODULE = 15,
-    PERIPH_RMT_MODULE = 16,
-    PERIPH_PCNT_MODULE = 17,
-    PERIPH_SPI_MODULE = 18,
-    PERIPH_HSPI_MODULE = 19,
-    PERIPH_VSPI_MODULE = 20,
-    PERIPH_SPI_DMA_MODULE = 21,
-    PERIPH_SDMMC_MODULE = 22,
-    PERIPH_SDIO_SLAVE_MODULE = 23,
-    PERIPH_CAN_MODULE = 24,
-    PERIPH_EMAC_MODULE = 25,
-    PERIPH_RNG_MODULE = 26,
-    PERIPH_WIFI_MODULE = 27,
-    PERIPH_BT_MODULE = 28,
-    PERIPH_WIFI_BT_COMMON_MODULE = 29,
-    PERIPH_BT_BASEBAND_MODULE = 30,
-    PERIPH_BT_LC_MODULE = 31,
-    PERIPH_AES_MODULE = 32,
-    PERIPH_SHA_MODULE = 33,
-    PERIPH_RSA_MODULE = 34,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -28823,30 +28264,6 @@ extern "C" {
 }
 extern "C" {
     pub static mut I2S1: i2s_dev_t;
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct i2s_signal_conn_t {
-    pub o_bck_in_sig: u8,
-    pub o_ws_in_sig: u8,
-    pub o_bck_out_sig: u8,
-    pub o_ws_out_sig: u8,
-    pub o_data_out_sig: u8,
-    pub i_bck_in_sig: u8,
-    pub i_ws_in_sig: u8,
-    pub i_bck_out_sig: u8,
-    pub i_ws_out_sig: u8,
-    pub i_data_in_sig: u8,
-    pub irq: u8,
-    pub module: periph_module_t,
-}
-impl Default for i2s_signal_conn_t {
-    fn default() -> Self {
-        unsafe { ::core::mem::zeroed() }
-    }
-}
-extern "C" {
-    pub static mut i2s_periph_signal: [i2s_signal_conn_t; 2usize];
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -38407,216 +37824,44 @@ pub struct rtc_gpio_desc_t {
 extern "C" {
     pub static mut rtc_gpio_desc: [rtc_gpio_desc_t; 40usize];
 }
-#[repr(C)]
-#[repr(align(4))]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub struct _bindgen_ty_2 {
-    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize], u16>,
-}
-impl _bindgen_ty_2 {
-    #[inline]
-    pub fn reserved0(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 13u8) as u32) }
-    }
-    #[inline]
-    pub fn set_reserved0(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(0usize, 13u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn fun_ie(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_fun_ie(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(13usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn slp_oe(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_slp_oe(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(14usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn slp_ie(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_slp_ie(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(15usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn slp_sel(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_slp_sel(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(16usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn fun_sel(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(17usize, 2u8) as u32) }
-    }
-    #[inline]
-    pub fn set_fun_sel(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(17usize, 2u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn mux_sel(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(19usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_mux_sel(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(19usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn reserved20(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(20usize, 7u8) as u32) }
-    }
-    #[inline]
-    pub fn set_reserved20(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(20usize, 7u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn rue(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_rue(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(27usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn rde(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_rde(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(28usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn drv(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(29usize, 2u8) as u32) }
-    }
-    #[inline]
-    pub fn set_drv(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(29usize, 2u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn reserved31(&self) -> u32 {
-        unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
-    }
-    #[inline]
-    pub fn set_reserved31(&mut self, val: u32) {
-        unsafe {
-            let val: u32 = ::core::mem::transmute(val);
-            self._bitfield_1.set(31usize, 1u8, val as u64)
-        }
-    }
-    #[inline]
-    pub fn new_bitfield_1(
-        reserved0: u32,
-        fun_ie: u32,
-        slp_oe: u32,
-        slp_ie: u32,
-        slp_sel: u32,
-        fun_sel: u32,
-        mux_sel: u32,
-        reserved20: u32,
-        rue: u32,
-        rde: u32,
-        drv: u32,
-        reserved31: u32,
-    ) -> __BindgenBitfieldUnit<[u8; 4usize], u16> {
-        let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize], u16> =
-            Default::default();
-        __bindgen_bitfield_unit.set(0usize, 13u8, {
-            let reserved0: u32 = unsafe { ::core::mem::transmute(reserved0) };
-            reserved0 as u64
-        });
-        __bindgen_bitfield_unit.set(13usize, 1u8, {
-            let fun_ie: u32 = unsafe { ::core::mem::transmute(fun_ie) };
-            fun_ie as u64
-        });
-        __bindgen_bitfield_unit.set(14usize, 1u8, {
-            let slp_oe: u32 = unsafe { ::core::mem::transmute(slp_oe) };
-            slp_oe as u64
-        });
-        __bindgen_bitfield_unit.set(15usize, 1u8, {
-            let slp_ie: u32 = unsafe { ::core::mem::transmute(slp_ie) };
-            slp_ie as u64
-        });
-        __bindgen_bitfield_unit.set(16usize, 1u8, {
-            let slp_sel: u32 = unsafe { ::core::mem::transmute(slp_sel) };
-            slp_sel as u64
-        });
-        __bindgen_bitfield_unit.set(17usize, 2u8, {
-            let fun_sel: u32 = unsafe { ::core::mem::transmute(fun_sel) };
-            fun_sel as u64
-        });
-        __bindgen_bitfield_unit.set(19usize, 1u8, {
-            let mux_sel: u32 = unsafe { ::core::mem::transmute(mux_sel) };
-            mux_sel as u64
-        });
-        __bindgen_bitfield_unit.set(20usize, 7u8, {
-            let reserved20: u32 = unsafe { ::core::mem::transmute(reserved20) };
-            reserved20 as u64
-        });
-        __bindgen_bitfield_unit.set(27usize, 1u8, {
-            let rue: u32 = unsafe { ::core::mem::transmute(rue) };
-            rue as u64
-        });
-        __bindgen_bitfield_unit.set(28usize, 1u8, {
-            let rde: u32 = unsafe { ::core::mem::transmute(rde) };
-            rde as u64
-        });
-        __bindgen_bitfield_unit.set(29usize, 2u8, {
-            let drv: u32 = unsafe { ::core::mem::transmute(drv) };
-            drv as u64
-        });
-        __bindgen_bitfield_unit.set(31usize, 1u8, {
-            let reserved31: u32 = unsafe { ::core::mem::transmute(reserved31) };
-            reserved31 as u64
-        });
-        __bindgen_bitfield_unit
-    }
-}
-pub type rtc_gpio_info_t = _bindgen_ty_2;
-extern "C" {
-    pub static mut rtc_gpio_reg: [*mut rtc_gpio_info_t; 18usize];
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum periph_module_t {
+    PERIPH_LEDC_MODULE = 0,
+    PERIPH_UART0_MODULE = 1,
+    PERIPH_UART1_MODULE = 2,
+    PERIPH_UART2_MODULE = 3,
+    PERIPH_I2C0_MODULE = 4,
+    PERIPH_I2C1_MODULE = 5,
+    PERIPH_I2S0_MODULE = 6,
+    PERIPH_I2S1_MODULE = 7,
+    PERIPH_TIMG0_MODULE = 8,
+    PERIPH_TIMG1_MODULE = 9,
+    PERIPH_PWM0_MODULE = 10,
+    PERIPH_PWM1_MODULE = 11,
+    PERIPH_PWM2_MODULE = 12,
+    PERIPH_PWM3_MODULE = 13,
+    PERIPH_UHCI0_MODULE = 14,
+    PERIPH_UHCI1_MODULE = 15,
+    PERIPH_RMT_MODULE = 16,
+    PERIPH_PCNT_MODULE = 17,
+    PERIPH_SPI_MODULE = 18,
+    PERIPH_HSPI_MODULE = 19,
+    PERIPH_VSPI_MODULE = 20,
+    PERIPH_SPI_DMA_MODULE = 21,
+    PERIPH_SDMMC_MODULE = 22,
+    PERIPH_SDIO_SLAVE_MODULE = 23,
+    PERIPH_CAN_MODULE = 24,
+    PERIPH_EMAC_MODULE = 25,
+    PERIPH_RNG_MODULE = 26,
+    PERIPH_WIFI_MODULE = 27,
+    PERIPH_BT_MODULE = 28,
+    PERIPH_WIFI_BT_COMMON_MODULE = 29,
+    PERIPH_BT_BASEBAND_MODULE = 30,
+    PERIPH_BT_LC_MODULE = 31,
+    PERIPH_AES_MODULE = 32,
+    PERIPH_SHA_MODULE = 33,
+    PERIPH_RSA_MODULE = 34,
 }
 extern "C" {
     pub fn periph_module_enable(periph: periph_module_t);
@@ -39693,14 +38938,6 @@ extern "C" {
 }
 extern "C" {
     pub fn lldesc_set_owner(head: *mut lldesc_t, nblks: u16, owner: u8) -> *mut lldesc_t;
-}
-extern "C" {
-    pub fn lldesc_setup_link(
-        out_desc_array: *mut lldesc_t,
-        buffer: *const std::os::raw::c_void,
-        size: std::os::raw::c_int,
-        isrx: bool,
-    );
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -45403,10 +44640,6 @@ pub struct spi_signal_conn_t {
     pub spihd_in: u8,
     pub spics_out: [u8; 3usize],
     pub spics_in: u8,
-    pub spidqs_out: u8,
-    pub spidqs_in: u8,
-    pub spicd_out: u8,
-    pub spicd_in: u8,
     pub spiclk_iomux_pin: u8,
     pub spid_iomux_pin: u8,
     pub spiq_iomux_pin: u8,
@@ -45465,8 +44698,8 @@ pub struct spi_device_interface_config_t {
     pub address_bits: u8,
     pub dummy_bits: u8,
     pub mode: u8,
-    pub duty_cycle_pos: u16,
-    pub cs_ena_pretrans: u16,
+    pub duty_cycle_pos: u8,
+    pub cs_ena_pretrans: u8,
     pub cs_ena_posttrans: u8,
     pub clock_speed_hz: std::os::raw::c_int,
     pub input_delay_ns: std::os::raw::c_int,
@@ -46915,6 +46148,9 @@ extern "C" {
 }
 extern "C" {
     pub fn sys_sem_free(sem: *mut sys_sem_t);
+}
+extern "C" {
+    pub fn sys_msleep(ms: u32_t);
 }
 extern "C" {
     pub fn sys_mbox_new(mbox: *mut sys_mbox_t, size: std::os::raw::c_int) -> err_t;

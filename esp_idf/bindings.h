@@ -14,8 +14,7 @@
 #include <esp_event.h>
 #include <esp_int_wdt.h>
 #include <esp_log.h>
-#include <esp_netif.h>
-#include <esp_netif.h>
+//#include <esp_netif.h>
 #include <esp_pthread.h>
 #include <esp_system.h>
 #include <esp_task_wdt.h>
@@ -40,6 +39,7 @@
 #include <lwip/ip4_addr.h>
 #include <lwip/inet.h>
 #include <lwip/netdb.h>
+#include <lwip/netif.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 

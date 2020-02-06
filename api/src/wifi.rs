@@ -25,9 +25,11 @@ pub unsafe fn init(ssid: &'static str, password: &'static str) -> Result<(), Esp
 
     WIFI_EVENT_GROUP = Some(idf::xEventGroupCreate());
 
-    idf::esp_netif_init().as_result()?;
+    idf::tcpip_adapter_init();
+
+    //idf::esp_netif_init().as_result()?;
     idf::esp_event_loop_create_default().as_result()?;
-    idf::esp_netif_create_default_wifi_sta();
+    //idf::esp_netif_create_default_wifi_sta();
     let cfg: idf::wifi_init_config_t = wifi_init_config_default();
     idf::esp_wifi_init(&cfg).as_result()?;
 
@@ -127,7 +129,7 @@ unsafe extern "C" fn event_handler(event_handler_arg: *mut c_void, event_base: i
 
 unsafe fn wifi_init_config_default() -> idf::wifi_init_config_t {
     idf::wifi_init_config_t {
-        event_handler: Some(idf::esp_event_send_internal),
+        event_handler: Some(idf::esp_event_send),
         osi_funcs: &mut idf::g_wifi_osi_funcs,
         wpa_crypto_funcs: idf::g_wifi_default_wpa_crypto_funcs,
         static_rx_buf_num: idf::CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM as i32,
