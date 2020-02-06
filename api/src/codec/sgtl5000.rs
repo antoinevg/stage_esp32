@@ -28,11 +28,6 @@ impl Codec for Driver {
         Ok(())
     }
 
-    fn start(&self, config: &Config) -> Result<(), EspError> {
-        // TODO
-        Ok(())
-    }
-
     fn start_c(&self, config: &Config,
                opaque_interface_ptr: *const OpaqueInterface) -> Result<(), EspError> {
         unsafe {
@@ -71,15 +66,15 @@ extern "C" fn RUST_codec_sgtl5000_callback(opaque_interface_ptr: *const OpaqueIn
         core::mem::transmute::<*const OpaqueInterface,
                                *mut Interface<Driver>>(opaque_interface_ptr)
     };
-    let buffer = unsafe {
-        core::mem::transmute::<*mut c_float, &mut Buffer>(buffer_ptr)
-    };
     let config = unsafe { &(*interface_ptr).config };
     let closure = unsafe { &mut (*interface_ptr).closure };
 
     if buffer_size != config.block_size {
         panic!("api::codec::sgtl5000 callback buffer size does not match interface block_size");
     }
+    let buffer = unsafe {
+        core::slice::from_raw_parts_mut(buffer_ptr, buffer_size)
+    };
 
     closure(fs, num_channels, buffer);
 }

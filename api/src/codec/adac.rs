@@ -1,10 +1,12 @@
-use cty::{c_float};
+use cty::{c_float, c_void};
 
 use esp_idf::bindings as idf;
-use esp_idf::{AsResult, EspError};
+use esp_idf::{AsResult, EspError, portMAX_DELAY};
 
+use crate::audio;
 use crate::audio::{Buffer, Config, Interface, OpaqueInterface};
 use crate::codec::Codec;
+use crate::i2s;
 use crate::logger;
 
 
@@ -24,14 +26,15 @@ impl Codec for Driver {
     }
 
     fn init(&self, config: &Config) -> Result<(), EspError> {
-        // TODO
-        Ok(())
+        log!(TAG, "initializing i2s driver with fs: {}", config.fs);
+        unsafe { i2s::init(config.fs, config.block_size) }
     }
 
-    fn start(&self, config: &Config) -> Result<(), EspError> {
-        // TODO
-        Ok(())
+    /*fn read(&self, &mut Buffer) {
     }
+
+    fn write(&self, &mut Buffer) {
+    }*/
 
     fn start_c(&self, config: &Config,
                opaque_interface_ptr: *const OpaqueInterface) -> Result<(), EspError> {
@@ -71,15 +74,15 @@ extern "C" fn RUST_codec_adac_callback(opaque_interface_ptr: *const OpaqueInterf
         core::mem::transmute::<*const OpaqueInterface,
                                *mut Interface<Driver>>(opaque_interface_ptr)
     };
-    let buffer = unsafe {
-        core::mem::transmute::<*mut c_float, &mut Buffer>(buffer_ptr)
-    };
     let config = unsafe { &(*interface_ptr).config };
     let closure = unsafe { &mut (*interface_ptr).closure };
 
     if buffer_size != config.block_size {
         panic!("api::codec::adac callback buffer size does not match interface block_size");
     }
+    let buffer = unsafe {
+        core::slice::from_raw_parts_mut(buffer_ptr, buffer_size)
+    };
 
     closure(fs, num_channels, buffer);
 }

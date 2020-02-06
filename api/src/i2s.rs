@@ -39,7 +39,7 @@ pub unsafe fn init(fs: f32, block_size: usize) -> Result<(), EspError> {
         intr_alloc_flags: idf::ESP_INTR_FLAG_LEVEL1 as i32,
         dma_buf_count: 4,
         dma_buf_len: block_size as i32,
-        //use_apll: false,
+        use_apll: false,
         //fixed_mclk: 12_288_000,
         ..idf::i2s_config_t::default()
     };
