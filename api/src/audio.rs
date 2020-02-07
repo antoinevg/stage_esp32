@@ -111,7 +111,7 @@ where C: Codec {
     fn audio_thread(&mut self) {
         const TAG: &str = "api::audio::thread";
 
-        let mut MUX: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
+        let mut mux: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
 
         let Config { fs, num_channels, word_size, block_size } = self.config;
 
@@ -130,7 +130,6 @@ where C: Codec {
         }
         log!(TAG, "allocated memory for callback buffer: {} bytes", buffer_size);
         log!(TAG, "stack max: {}", unsafe { idf::uxTaskGetStackHighWaterMark(core::ptr::null_mut()) });
-
         log!(TAG, "starting audio with fs: {} blocksize: {}", fs, block_size);
 
         //let mut state = State::new();
@@ -139,11 +138,16 @@ where C: Codec {
                 core::slice::from_raw_parts_mut(buffer_ptr, block_size)
             };
 
-            // TODO read buffer from driver
-
+            // read buffer from driver
+            match self.codec.read(&self.config, &mut buffer) {
+                Ok(()) => (),
+                Err(EspError(e)) => {
+                    log!(TAG, "codec.read failed with: {:?}", e);
+                }
+            }
 
             // pass buffer to audio callback
-            unsafe { idf::vTaskEnterCritical(&mut MUX); }
+            unsafe { idf::vTaskEnterCritical(&mut mux); }
             /*for f in 0..num_frames {
                 let x = f * self.config.num_channels;
                 state.channel_1 = test_signal_sin(self.config.fs, 110., state.channel_1.0);
@@ -154,7 +158,7 @@ where C: Codec {
             //test_callback_inline(self.config.fs, self.config.num_channels, buffer, &mut state);
             //test_callback(self.config.fs, self.config.num_channels, buffer, &mut state);
             (self.closure)(self.config.fs, self.config.num_channels, buffer);
-            unsafe { idf::vTaskExitCritical(&mut MUX); }
+            unsafe { idf::vTaskExitCritical(&mut mux); }
 
             // write buffer to driver
             match self.codec.write(&self.config, &buffer) {
@@ -281,25 +285,4 @@ pub fn test_signal_saw(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let phase = if phase > 1.0 { phase - 1.0 } else { phase };
 
     return (phase, sample);
-}
-
-
-// - conversions --------------------------------------------------------------
-
-#[inline(always)]
-pub fn clip_convert_u8(x: f32) -> u8 {
-    let x: f32 = if x > 1.0 { 1.0 } else if x < 1.0 { -1.0 } else { x };
-    let x: f32 = x + 1.;
-    //let x: f32 = x / 2.;
-    let x: f32 = x * 0.5;
-    let x: f32 = x * 255.;
-    (x as u32) as u8
-}
-
-
-#[inline(always)]
-fn u12_to_u8(source: &[u16], destination: &mut [u16], length: usize) {
-    for i in 0..length {
-        destination[i] = ((source[i] as u32 * 256 / 4096) as u16) << 8;
-    }
 }

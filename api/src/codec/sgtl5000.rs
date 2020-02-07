@@ -28,6 +28,11 @@ unsafe impl Codec for Driver {
         Ok(())
     }
 
+    fn read(&self, config: &Config, callback_buffer: &mut [f32]) -> Result<(), EspError> {
+        // TODO
+        Ok(())
+    }
+
     fn write(&self, config: &Config, callback_buffer: &[f32]) -> Result<(), EspError> {
         // TODO
         Ok(())

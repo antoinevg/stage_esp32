@@ -4,7 +4,7 @@ use esp_idf::{AsResult, EspError, portMAX_DELAY};
 use esp_idf::bindings as idf;
 
 use crate::audio::{Buffer, Config, Interface, OpaqueInterface};
-use crate::codec::Codec;
+use crate::codec::{Codec, f32_to_u8_clip};
 use crate::i2s;
 use crate::logger;
 
@@ -46,12 +46,17 @@ unsafe impl Codec for Driver {
         Ok(())
     }
 
+    fn read(&self, config: &Config, callback_buffer: &mut [f32]) -> Result<(), EspError> {
+        // TODO
+        Ok(())
+    }
+
     fn write(&self, config: &Config, buffer: &Buffer) -> Result<(), EspError> {
         let Config { num_channels, word_size, block_size, .. } = config;
         let buffer_size = block_size * word_size;
         let num_frames  = block_size / num_channels;
 
-        let mut dma_buffer = unsafe {
+        let dma_buffer = unsafe {
             core::slice::from_raw_parts_mut(self.dma_buffer_ptr, buffer_size)
         };
 
@@ -61,13 +66,13 @@ unsafe impl Codec for Driver {
             let right_f32 = buffer[index_f32+0];
             let left_f32  = buffer[index_f32+1];
 
-            //let right_u8: u8 = clip_convert_u8(right_f32);
-            //let left_u8: u8  = clip_convert_u8(left_f32);
+            let right_u8: u8 = f32_to_u8_clip(right_f32);
+            let left_u8: u8  = f32_to_u8_clip(left_f32);
 
-            let right_f32 = if right_f32 > 1. { 1. } else if right_f32 < -1. { -1. } else { right_f32 };
+            /*let right_f32 = if right_f32 > 1. { 1. } else if right_f32 < -1. { -1. } else { right_f32 };
             let left_f32  = if left_f32  > 1. { 1. } else if left_f32  < -1. { -1. } else { left_f32  };
             let right_u8: u8 = ((((right_f32 + 1.) * 0.5) * 255.0) as u32) as u8;
-            let left_u8:  u8 = ((((left_f32  + 1.) * 0.5) * 255.0) as u32) as u8;
+            let left_u8:  u8 = ((((left_f32  + 1.) * 0.5) * 255.0) as u32) as u8;*/
 
             let index_u8 = n * num_channels * word_size;
             dma_buffer[index_u8+0] = 0;
@@ -99,10 +104,8 @@ unsafe impl Codec for Driver {
                                config.fs,
                                config.num_channels,
                                config.word_size,
-                               config.block_size).as_result()?;
+                               config.block_size).as_result()
         }
-
-        Ok(())
     }
 }
 
