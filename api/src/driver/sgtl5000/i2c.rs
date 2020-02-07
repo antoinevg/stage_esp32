@@ -1,7 +1,23 @@
 use num_enum::IntoPrimitive;
 
-use esp_idf::{AsResult, EspError, portMAX_DELAY};
-use esp_idf::bindings::{i2c_port_t};
+use esp_idf::{AsResult, EspError, portMAX_DELAY, portTICK_RATE_MS};
+use esp_idf::bindings::{
+    i2c_port_t,
+    i2c_cmd_handle_t,
+    i2c_rw_t,
+    i2c_ack_type_t,
+};
+use esp_idf::bindings::{
+    i2c_cmd_link_create,
+    i2c_cmd_link_delete,
+    i2c_master_cmd_begin,
+    i2c_master_start,
+    i2c_master_stop,
+    i2c_master_read,
+    i2c_master_read_byte,
+    i2c_master_write,
+    i2c_master_write_byte,
+};
 
 
 // - codec register addresses -------------------------------------------------
@@ -66,17 +82,91 @@ enum Address {
 
 // - i2c ----------------------------------------------------------------------
 
-const ACK_CHECK_EN: u8  = 0x1; // I2C master will check ack from slave
-const ACK_CHECK_DIS: u8 = 0x0; // I2C master will not check ack from slave
-const ACK_VAL: u8       = 0x0; // I2C ack value
-const NACK_VAL: u8      = 0x1; // I2C nack value
+const ACK_CHECK_EN: bool  = true;  // I2C master will check ack from slave
+const ACK_CHECK_DIS: bool = false; // I2C master will not check ack from slave
+const ACK_VAL: bool       = false; // I2C ack value
+const NACK_VAL: bool      = true;  // I2C nack value
 
 
 fn foo() {
     let plonk: u16 = Address::CHIP_ID.into();
 }
 
-fn read(port: i2c_port_t) -> Result<u16, EspError> {
+unsafe fn read(port: i2c_port_t, address: u8, register: Address) -> Result<u16, EspError> {
+    let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
 
-    Ok(23)
+    // start
+    i2c_master_start(cmd).as_result()?;
+
+    // set write bit for address
+    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
+
+    // write register address
+    i2c_master_write_byte(cmd, (address >> 8) & 0xFF, ACK_CHECK_EN).as_result()?; // msb
+    i2c_master_write_byte(cmd, address & 0xFF, ACK_CHECK_EN).as_result()?;      // lsb
+    //let mut register: [u8; 2] = u16::to_le_bytes(register.into());
+    //i2c_master_write(cmd, register.as_mut_ptr(), 2, ACK_CHECK_EN).as_result()?;
+
+    // restart
+    i2c_master_start(cmd).as_result()?;
+
+    // set read bit for address
+    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_READ as u8, ACK_CHECK_EN).as_result()?;
+
+    // read register value TODO use u32::from_le_bytes([.., ..]);
+    // https://doc.rust-lang.org/std/primitive.u32.html#method.from_le_bytes
+    let mut value = (0, 0);
+    i2c_master_read_byte(cmd, &mut value.0, i2c_ack_type_t::I2C_MASTER_ACK);  // msb
+    i2c_master_read_byte(cmd, &mut value.1, i2c_ack_type_t::I2C_MASTER_NACK); // lsb
+    //let value = (((value.0 as u16) & 0xf) << 8) | (value.1 as u16);
+    //let mut value: [u8; 2] = [0; 2];
+    //i2c_master_read(cmd, value.as_mut_ptr(), 2, i2c_ack_type_t::I2C_MASTER_ACK).as_result()?;;
+    //let value = u16::from_le_bytes(value);
+
+    // stop
+    i2c_master_stop(cmd).as_result()?;
+
+    // send
+    i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
+    i2c_cmd_link_delete(cmd);
+
+    // TODO try up top
+    let value = (((value.0 as u16) & 0xf) << 8) | (value.1 as u16);
+    //let value = u16::from_le_bytes(value);
+
+    Ok(value)
+}
+
+
+unsafe fn write(port: i2c_port_t, address: u8, register: Address, value: u16) -> Result<(), EspError> {
+    let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
+
+    // start
+    i2c_master_start(cmd).as_result()?;
+
+    // set write bit for address
+    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
+
+    // write value to register
+    let register: u16 = register.into();
+    let value: u16 = value.into();
+    let mut bytes: [u8; 4] = [
+        ((register >> 8) & 0xFF) as u8,
+        (register & 0xFF) as u8,
+        ((value >> 8) & 0xFF) as u8,
+        (value & 0xFF) as u8,
+    ];
+    //let register: [u8; 2] = u16::to_le_bytes(register.into());
+    //let value: [u8; 2] = u16::to_le_bytes(value.into());
+    //let bytes: [u8; 4] = [ register[0], register[1], value[0], value[1] ];
+    i2c_master_write(cmd, bytes.as_mut_ptr(), 4, ACK_CHECK_EN).as_result()?;
+
+    // stop
+    i2c_master_stop(cmd).as_result()?;
+
+    // send
+    i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
+    i2c_cmd_link_delete(cmd);
+
+    Ok(())
 }

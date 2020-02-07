@@ -78,6 +78,7 @@ unsafe impl Codec for Driver {
             let left_lo:  u8 = dma_buffer[index_u8+2];
             let left_hi:  u8 = dma_buffer[index_u8+3];
 
+            // TODO use from_le_bytes - https://doc.rust-lang.org/std/primitive.u32.html#method.from_le_bytes
             let right_u16: u16 = (((right_hi as u16) & 0xf) << 8) | (right_lo as u16);
             let left_u16:  u16 = (((left_hi  as u16) & 0xf) << 8) | (left_lo as u16);
 
