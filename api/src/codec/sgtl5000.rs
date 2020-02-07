@@ -18,12 +18,17 @@ const TAG: &str = "api::codec::sgtl5000";
 pub struct Driver;
 
 
-impl Codec for Driver {
+unsafe impl Codec for Driver {
     fn new() -> Driver {
         Driver { }
     }
 
-    fn init(&self, config: &Config) -> Result<(), EspError> {
+    fn init(&mut self, config: &Config) -> Result<(), EspError> {
+        // TODO
+        Ok(())
+    }
+
+    fn write(&self, config: &Config, callback_buffer: &[f32]) -> Result<(), EspError> {
         // TODO
         Ok(())
     }

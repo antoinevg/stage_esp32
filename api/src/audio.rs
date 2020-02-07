@@ -76,26 +76,26 @@ where C: Codec {
         let priority = 5;
         let core_id = 1; // idf::tskNO_AFFINITY as i32;
 
+        #[no_mangle]
+        extern "C" fn _Stage_api_audio_task_closure_wrapper(arg: *mut c_void) {
+            let closure: &mut &mut dyn FnMut() -> () = unsafe { core::mem::transmute(arg) };
+            closure()
+        }
+
+        let mut closure = || -> () {
+            self.audio_thread();
+        };
+
+        let mut closure_ref: &mut dyn FnMut() -> () = &mut closure;
+        let closure_rref = &mut closure_ref;
+        let closure_ptr = closure_rref as *mut _ as *mut c_void;
+
+        let mut task_handle = unsafe { core::mem::zeroed::<c_void>() };
+        let task_handle_ptr = &mut task_handle as *mut _ as *mut idf::TaskHandle_t;
+
+        self.codec.init(&mut self.config)?;
+
         unsafe {
-            #[no_mangle]
-            extern "C" fn _Stage_api_audio_task_closure_wrapper(arg: *mut c_void) {
-                let closure: &mut &mut dyn FnMut() -> () = unsafe { core::mem::transmute(arg) };
-                closure()
-            }
-
-            let mut closure = || -> () {
-                self.audio_thread();
-            };
-
-            let mut closure_ref: &mut dyn FnMut() -> () = &mut closure;
-            let closure_rref = &mut closure_ref;
-            let closure_ptr = closure_rref as *mut _ as *mut c_void;
-
-            let mut task_handle = core::mem::zeroed::<c_void>();
-            let task_handle_ptr = &mut task_handle as *mut _ as *mut idf::TaskHandle_t;
-
-            self.codec.init(&self.config)?;
-
             idf::xTaskCreatePinnedToCore(Some(_Stage_api_audio_task_closure_wrapper),
                                          "audio::thread".as_bytes().as_ptr() as *const i8,
                                          stack_depth,
@@ -104,79 +104,64 @@ where C: Codec {
                                          task_handle_ptr,
                                          core_id);
         }
+
         Ok(())
     }
 
-    unsafe fn audio_thread(&mut self) {
+    fn audio_thread(&mut self) {
         const TAG: &str = "api::audio::thread";
 
-        static mut MUX: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
+        let mut MUX: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
 
         let Config { fs, num_channels, word_size, block_size } = self.config;
 
         let buffer_size = block_size * word_size;
         let num_frames  = block_size / num_channels;
-        let dma_read_buffer_ptr = idf::calloc(buffer_size as u32,
-                                              core::mem::size_of::<u8>() as u32) as *mut u8;
-        let dma_write_buffer_ptr = idf::calloc(buffer_size as u32,
-                                               core::mem::size_of::<u8>() as u32) as *mut u8;
-        let callback_buffer_ptr = idf::calloc(block_size as u32,
-                                              core::mem::size_of::<f32>() as u32) as *mut f32;
-        let mut state = State::new();
+
+        // allocate memory for callback buffer
+        // TODO try `heap_caps_aligned_alloc` once we can build against esp-idf master
+        //      https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/mem_alloc.html
+        let buffer_ptr = unsafe {
+            idf::calloc(block_size as u32,
+                        core::mem::size_of::<f32>() as u32) as *mut f32
+        };
+        if buffer_ptr == core::ptr::null_mut() {
+            panic!("api::audio::thread failed to allocate memory for callback buffer");
+        }
+        log!(TAG, "allocated memory for callback buffer: {} bytes", buffer_size);
+        log!(TAG, "stack max: {}", unsafe { idf::uxTaskGetStackHighWaterMark(core::ptr::null_mut()) });
 
         log!(TAG, "starting audio with fs: {} blocksize: {}", fs, block_size);
-        log!(TAG, "stack max: {}", idf::uxTaskGetStackHighWaterMark(core::ptr::null_mut()));
 
+        //let mut state = State::new();
         loop {
-            // TODO read data from i2s
+            let mut buffer: &mut Buffer = unsafe {
+                core::slice::from_raw_parts_mut(buffer_ptr, block_size)
+            };
 
-            let dma_write_buffer: &mut [u8] = core::slice::from_raw_parts_mut(dma_write_buffer_ptr, buffer_size);
-            let callback_buffer: &mut [f32] = core::slice::from_raw_parts_mut(callback_buffer_ptr, block_size);
+            // TODO read buffer from driver
 
-            // invoke callback
-            idf::vTaskEnterCritical(&mut MUX);
+
+            // pass buffer to audio callback
+            unsafe { idf::vTaskEnterCritical(&mut MUX); }
             /*for f in 0..num_frames {
                 let x = f * self.config.num_channels;
                 state.channel_1 = test_signal_sin(self.config.fs, 110., state.channel_1.0);
                 state.channel_2 = test_signal_saw(self.config.fs, 110., state.channel_2.0);
-                callback_buffer[x+0] = state.channel_2.1; // right
-                callback_buffer[x+1] = state.channel_1.1; // left
+                buffer[x+0] = state.channel_2.1; // right
+                buffer[x+1] = state.channel_1.1; // left
             }*/
-            //test_callback_inline(self.config.fs, self.config.num_channels, callback_buffer, &mut state);
-            //test_callback(self.config.fs, self.config.num_channels, callback_buffer, &mut state);
-            (self.closure)(self.config.fs, self.config.num_channels, callback_buffer);
-            idf::vTaskExitCritical(&mut MUX);
+            //test_callback_inline(self.config.fs, self.config.num_channels, buffer, &mut state);
+            //test_callback(self.config.fs, self.config.num_channels, buffer, &mut state);
+            (self.closure)(self.config.fs, self.config.num_channels, buffer);
+            unsafe { idf::vTaskExitCritical(&mut MUX); }
 
-            // convert callback_buffer data from f32 to u8
-            for n in 0..num_frames {
-                let index_f32 = n * self.config.num_channels;
-                let right_f32 = callback_buffer[index_f32+0];
-                let left_f32  = callback_buffer[index_f32+1];
-
-                //let right_u8: u8 = clip_convert_u8(right_f32);
-                //let left_u8: u8  = clip_convert_u8(left_f32);
-
-                let right_f32 = if right_f32 > 1. { 1. } else if right_f32 < -1. { -1. } else { right_f32 };
-                let left_f32  = if left_f32  > 1. { 1. } else if left_f32  < -1. { -1. } else { left_f32  };
-                let right_u8: u8 = ((((right_f32 + 1.) * 0.5) * 255.0) as u32) as u8;
-                let left_u8:  u8 = ((((left_f32  + 1.) * 0.5) * 255.0) as u32) as u8;
-
-                let index_u8 = n * self.config.num_channels * self.config.word_size;
-                dma_write_buffer[index_u8+0] = 0;
-                dma_write_buffer[index_u8+1] = right_u8;
-                dma_write_buffer[index_u8+2] = 0;
-                dma_write_buffer[index_u8+3] = left_u8;
-            }
-
-            // write data to i2s
-            let mut bytes_written = 0;
-            idf::i2s_write(i2s::PORT,
-                           dma_write_buffer.as_ptr() as *const core::ffi::c_void,
-                           buffer_size,
-                           &mut bytes_written,
-                           portMAX_DELAY);
-            if bytes_written != buffer_size {
-                log!(TAG, "write mismatch buffer_size:{} != bytes_written:{}", buffer_size, bytes_written);
+            // write buffer to driver
+            match self.codec.write(&self.config, &buffer) {
+                Ok(()) => (),
+                Err(EspError(e)) => {
+                    log!(TAG, "codec.write failed with: {:?}", e);
+                }
             }
         }
     }

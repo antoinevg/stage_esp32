@@ -1,6 +1,6 @@
 use esp_idf::{AsResult, EspError};
 
-use crate::audio;
+use crate::audio::{Config, OpaqueInterface};
 use crate::logger;
 
 
@@ -17,13 +17,14 @@ const TAG: &str = "api::codec::mod";
 
 // - types --------------------------------------------------------------------
 
-pub trait Codec {
+pub unsafe trait Codec {
     fn new() -> Self;
 
-    fn init (&self, config: &audio::Config) -> Result<(), EspError>;
+    fn start_c(&self, config: &Config,
+               opaque_interface_ptr: *const OpaqueInterface) -> Result<(), EspError>;
 
-    fn start_c(&self, config: &audio::Config,
-               opaque_interface_ptr: *const audio::OpaqueInterface) -> Result<(), EspError>;
+    fn init(&mut self, config: &Config) -> Result<(), EspError>;
+    fn write(&self, config: &Config, callback_buffer: &[f32]) -> Result<(), EspError>;
 
     fn test(&self) -> () {
         log!(TAG, "Codec::test");

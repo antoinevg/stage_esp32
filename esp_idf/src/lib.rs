@@ -58,6 +58,8 @@ impl From<bindings::in_addr> for bindings::ip4_addr {
 // - EspError -----------------------------------------------------------------
 //
 // Original is defined as: typedef int32_t esp_err_t;
+//
+// See: <esp-idf>/components/esp_common/include/esp_err.h
 
 #[derive(Copy, Clone, Debug)]
 pub struct EspError(pub bindings::esp_err_t);
