@@ -150,14 +150,14 @@ where C: Codec {
             unsafe { idf::vTaskEnterCritical(&mut mux); }
             /*for f in 0..num_frames {
                 let x = f * num_channels;
-                state.channel_1 = test_signal_sin(fs, 110., state.channel_1.0);
-                state.channel_2 = test_signal_saw(fs, 110., state.channel_2.0);
+                state.channel_1 = test_signal_sin(fs, 1000., state.channel_1.0);
+                state.channel_2 = test_signal_saw(fs, 1000., state.channel_2.0);
                 buffer[x+0] = state.channel_2.1; // right
                 buffer[x+1] = state.channel_1.1; // left
             }*/
             //test_callback_inline(fs, num_channels, buffer, &mut state);
             //test_callback(fs, num_channels, buffer, &mut state);
-            //(self.closure)(fs, num_channels, buffer);
+            (self.closure)(fs, num_channels, buffer);
             unsafe { idf::vTaskExitCritical(&mut mux); }
 
             // write buffer to driver
@@ -193,8 +193,8 @@ fn test_callback(fs: f32, num_channels: usize, buffer: &mut Buffer, state: &mut 
     for f in 0..num_frames {
         let x = f * num_channels;
 
-        state.channel_1 = test_signal_sin(fs, 110., state.channel_1.0);
-        state.channel_2 = test_signal_saw(fs, 110., state.channel_2.0);
+        state.channel_1 = test_signal_sin(fs, 1000., state.channel_1.0);
+        state.channel_2 = test_signal_saw(fs, 1000., state.channel_2.0);
 
         buffer[x+0] = state.channel_2.1; // right
         buffer[x+1] = state.channel_1.1; // left
@@ -207,8 +207,8 @@ fn test_callback_inline(fs: f32, num_channels: usize, buffer: &mut Buffer, state
     for f in 0..num_frames {
         let x = f * num_channels;
 
-        state.channel_1 = test_signal_sin(fs, 110., state.channel_1.0);
-        state.channel_2 = test_signal_saw(fs, 110., state.channel_2.0);
+        state.channel_1 = test_signal_sin(fs, 1000., state.channel_1.0);
+        state.channel_2 = test_signal_saw(fs, 1000., state.channel_2.0);
 
         buffer[x+0] = state.channel_2.1; // right
         buffer[x+1] = state.channel_1.1; // left
