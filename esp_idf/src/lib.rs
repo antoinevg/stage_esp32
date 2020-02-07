@@ -139,6 +139,11 @@ pub fn errno() -> cty::c_int {
 
 // - misc constants -----------------------------------------------------------
 
+// actually CONFIG_FREERTOS_HZ which is 100 by default
+pub const configTICK_RATE_HZ: bindings::TickType_t = bindings::configTICK_RATE_HZ;
+pub const portTICK_PERIOD_MS: bindings::TickType_t = (1000 as bindings::TickType_t) / configTICK_RATE_HZ;
+pub const portTICK_RATE_MS:   bindings::TickType_t = portTICK_PERIOD_MS;
+
 pub const portMAX_DELAY: bindings::TickType_t = 0xffffffff;
 
 pub const portMUX_INITIALIZER_UNLOCKED: bindings::portMUX_TYPE = bindings::portMUX_TYPE {
