@@ -7,6 +7,10 @@ use crate::audio::{Buffer, Config, Interface, OpaqueInterface};
 use crate::driver::Codec;
 use crate::logger;
 
+// - modules ------------------------------------------------------------------
+
+pub mod i2c;
+
 
 // - global constants ---------------------------------------------------------
 
