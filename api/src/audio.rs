@@ -72,29 +72,28 @@ where C: Codec {
     }
 
     pub fn start(&mut self) -> Result<(), EspError> {
-        let stack_depth = 8192;
-        let priority = 5;
-        let core_id = 1; // idf::tskNO_AFFINITY as i32;
+        // initialize codec
+        self.codec.init(&mut self.config)?;
 
+        // set up audio callback
         #[no_mangle]
         extern "C" fn _Stage_api_audio_task_closure_wrapper(arg: *mut c_void) {
             let closure: &mut &mut dyn FnMut() -> () = unsafe { core::mem::transmute(arg) };
             closure()
         }
-
         let mut closure = || -> () {
             self.audio_thread();
         };
-
         let mut closure_ref: &mut dyn FnMut() -> () = &mut closure;
         let closure_rref = &mut closure_ref;
         let closure_ptr = closure_rref as *mut _ as *mut c_void;
 
+        // start audio thread
+        let stack_depth = 8192;
+        let priority = 5;
+        let core_id = 1; // idf::tskNO_AFFINITY as i32;
         let mut task_handle = unsafe { core::mem::zeroed::<c_void>() };
         let task_handle_ptr = &mut task_handle as *mut _ as *mut idf::TaskHandle_t;
-
-        self.codec.init(&mut self.config)?;
-
         unsafe {
             idf::xTaskCreatePinnedToCore(Some(_Stage_api_audio_task_closure_wrapper),
                                          "audio::thread".as_bytes().as_ptr() as *const i8,
@@ -111,10 +110,11 @@ where C: Codec {
     fn audio_thread(&mut self) {
         const TAG: &str = "api::audio::thread";
 
-        let mut mux: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
+        log!(TAG, "unused stack memory: {} bytes", unsafe {
+            idf::uxTaskGetStackHighWaterMark(core::ptr::null_mut())
+        });
 
         let Config { fs, num_channels, word_size, block_size } = self.config;
-
         let buffer_size = block_size * word_size;
         let num_frames  = block_size / num_channels;
 
@@ -129,10 +129,10 @@ where C: Codec {
             panic!("api::audio::thread failed to allocate memory for callback buffer");
         }
         log!(TAG, "allocated memory for callback buffer: {} bytes", buffer_size);
-        log!(TAG, "stack max: {}", unsafe { idf::uxTaskGetStackHighWaterMark(core::ptr::null_mut()) });
         log!(TAG, "starting audio with fs: {} blocksize: {}", fs, block_size);
 
         //let mut state = State::new();
+        let mut mux: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
         loop {
             let mut buffer: &mut Buffer = unsafe {
                 core::slice::from_raw_parts_mut(buffer_ptr, block_size)
@@ -149,15 +149,15 @@ where C: Codec {
             // pass buffer to audio callback
             unsafe { idf::vTaskEnterCritical(&mut mux); }
             /*for f in 0..num_frames {
-                let x = f * self.config.num_channels;
-                state.channel_1 = test_signal_sin(self.config.fs, 110., state.channel_1.0);
-                state.channel_2 = test_signal_saw(self.config.fs, 110., state.channel_2.0);
+                let x = f * num_channels;
+                state.channel_1 = test_signal_sin(fs, 110., state.channel_1.0);
+                state.channel_2 = test_signal_saw(fs, 110., state.channel_2.0);
                 buffer[x+0] = state.channel_2.1; // right
                 buffer[x+1] = state.channel_1.1; // left
             }*/
-            //test_callback_inline(self.config.fs, self.config.num_channels, buffer, &mut state);
-            //test_callback(self.config.fs, self.config.num_channels, buffer, &mut state);
-            (self.closure)(self.config.fs, self.config.num_channels, buffer);
+            //test_callback_inline(fs, num_channels, buffer, &mut state);
+            //test_callback(fs, num_channels, buffer, &mut state);
+            //(self.closure)(fs, num_channels, buffer);
             unsafe { idf::vTaskExitCritical(&mut mux); }
 
             // write buffer to driver

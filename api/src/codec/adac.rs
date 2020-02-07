@@ -4,7 +4,7 @@ use esp_idf::{AsResult, EspError, portMAX_DELAY};
 use esp_idf::bindings as idf;
 
 use crate::audio::{Buffer, Config, Interface, OpaqueInterface};
-use crate::codec::{Codec, f32_to_u8_clip};
+use crate::codec::Codec;
 use crate::i2s;
 use crate::logger;
 
@@ -47,7 +47,51 @@ unsafe impl Codec for Driver {
     }
 
     fn read(&self, config: &Config, callback_buffer: &mut [f32]) -> Result<(), EspError> {
-        // TODO
+        let Config { num_channels, word_size, block_size, .. } = config;
+        let buffer_size = block_size * word_size;
+        let num_frames  = block_size / num_channels;
+
+        let dma_buffer = unsafe {
+            core::slice::from_raw_parts_mut(self.dma_buffer_ptr, buffer_size)
+        };
+
+        // read audio data from i2s
+        let mut bytes_read = 0;
+        unsafe {
+            idf::i2s_read(i2s::PORT,
+                          dma_buffer.as_ptr() as *mut core::ffi::c_void,
+                          buffer_size,
+                          &mut bytes_read,
+                          portMAX_DELAY).as_result()?;
+        }
+        if bytes_read != buffer_size {
+            log!(TAG, "read mismatch buffer_size:{} != bytes_read:{}", buffer_size, bytes_read);
+            return (idf::ESP_ERR_INVALID_SIZE as idf::esp_err_t).as_result();
+        }
+
+        // convert audio data from u12 to f32
+        for n in 0..num_frames {
+            let index_u8 = n * num_channels * word_size;
+
+            let right_lo: u8 = dma_buffer[index_u8+0];
+            let right_hi: u8 = dma_buffer[index_u8+1];
+            let left_lo:  u8 = dma_buffer[index_u8+2];
+            let left_hi:  u8 = dma_buffer[index_u8+3];
+
+            let right_u16: u16 = (((right_hi as u16) & 0xf) << 8) | (right_lo as u16);
+            let left_u16:  u16 = (((left_hi  as u16) & 0xf) << 8) | (left_lo as u16);
+
+            let right_f32 = (((right_u16 as f32) / 4095.) * 2.) - 1.;
+            let left_f32  = (((left_u16  as f32) / 4095.) * 2.) - 1.;
+
+            let right_f32 = if right_f32 > 1. { 1. } else if right_f32 < -1. { -1. } else { right_f32 };
+            let left_f32  = if left_f32  > 1. { 1. } else if left_f32  < -1. { -1. } else { left_f32  };
+
+            let index_f32 = n * num_channels;
+            callback_buffer[index_f32+0] = right_f32;
+            callback_buffer[index_f32+1] = left_f32;
+        }
+
         Ok(())
     }
 
@@ -60,19 +104,17 @@ unsafe impl Codec for Driver {
             core::slice::from_raw_parts_mut(self.dma_buffer_ptr, buffer_size)
         };
 
-        // convert buffer data from f32 to u8
+        // convert audio data from f32 to u8
         for n in 0..num_frames {
             let index_f32 = n * num_channels;
             let right_f32 = buffer[index_f32+0];
             let left_f32  = buffer[index_f32+1];
 
-            let right_u8: u8 = f32_to_u8_clip(right_f32);
-            let left_u8: u8  = f32_to_u8_clip(left_f32);
-
-            /*let right_f32 = if right_f32 > 1. { 1. } else if right_f32 < -1. { -1. } else { right_f32 };
+            let right_f32 = if right_f32 > 1. { 1. } else if right_f32 < -1. { -1. } else { right_f32 };
             let left_f32  = if left_f32  > 1. { 1. } else if left_f32  < -1. { -1. } else { left_f32  };
+
             let right_u8: u8 = ((((right_f32 + 1.) * 0.5) * 255.0) as u32) as u8;
-            let left_u8:  u8 = ((((left_f32  + 1.) * 0.5) * 255.0) as u32) as u8;*/
+            let left_u8:  u8 = ((((left_f32  + 1.) * 0.5) * 255.0) as u32) as u8;
 
             let index_u8 = n * num_channels * word_size;
             dma_buffer[index_u8+0] = 0;
@@ -81,20 +123,21 @@ unsafe impl Codec for Driver {
             dma_buffer[index_u8+3] = left_u8;
         }
 
-        // write data to i2s
+        // write audio data to i2s
         let mut bytes_written = 0;
-        let result = unsafe {
+        unsafe {
             idf::i2s_write(i2s::PORT,
                            dma_buffer.as_ptr() as *const core::ffi::c_void,
                            buffer_size,
                            &mut bytes_written,
-                           portMAX_DELAY).as_result()
-        };
+                           portMAX_DELAY).as_result()?;
+        }
         if bytes_written != buffer_size {
             log!(TAG, "write mismatch buffer_size:{} != bytes_written:{}", buffer_size, bytes_written);
+            return (idf::ESP_ERR_INVALID_SIZE as idf::esp_err_t).as_result();
         }
 
-        result
+        Ok(())
     }
 
     fn start_c(&self, config: &Config,
