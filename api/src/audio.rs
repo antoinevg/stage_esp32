@@ -10,9 +10,9 @@ use crate::i2s;
 use crate::logger;
 use crate::wavetable;
 
-use crate::codec::Codec;
-use crate::codec::adac;
-use crate::codec::sgtl5000;
+use crate::driver::Codec;
+use crate::driver::adac;
+use crate::driver::sgtl5000;
 
 
 // - global constants ---------------------------------------------------------

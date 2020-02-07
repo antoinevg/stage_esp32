@@ -4,14 +4,14 @@ use esp_idf::{AsResult, EspError, portMAX_DELAY};
 use esp_idf::bindings as idf;
 
 use crate::audio::{Buffer, Config, Interface, OpaqueInterface};
-use crate::codec::Codec;
+use crate::driver::Codec;
 use crate::i2s;
 use crate::logger;
 
 
 // - global constants ---------------------------------------------------------
 
-const TAG: &str = "api::codec::adac";
+const TAG: &str = "api::driver::adac";
 
 
 // - driver -------------------------------------------------------------------
@@ -180,7 +180,7 @@ extern "C" fn RUST_codec_adac_callback(opaque_interface_ptr: *const OpaqueInterf
     let closure = unsafe { &mut (*interface_ptr).closure };
 
     if buffer_size != config.block_size {
-        panic!("api::codec::adac callback buffer size does not match interface block_size");
+        panic!("api::driver::adac callback buffer size does not match interface block_size");
     }
     let buffer = unsafe {
         core::slice::from_raw_parts_mut(buffer_ptr, buffer_size)

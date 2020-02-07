@@ -32,8 +32,8 @@ macro_rules! log {
 
 pub mod allocators;
 pub mod audio;
-pub mod codec;
 pub mod blinky;
+pub mod driver;
 pub mod i2s;
 pub mod ledc;
 pub mod logger;
