@@ -91,7 +91,7 @@ where C: Codec {
         // start audio thread
         let stack_depth = 8192;
         let priority = 5;
-        let core_id = 1; // idf::tskNO_AFFINITY as i32;
+        let core_id = 1;
         let mut task_handle = unsafe { core::mem::zeroed::<c_void>() };
         let task_handle_ptr = &mut task_handle as *mut _ as *mut idf::TaskHandle_t;
         unsafe {
@@ -119,7 +119,7 @@ where C: Codec {
         let num_frames  = block_size / num_channels;
 
         // allocate memory for callback buffer
-        // TODO try `heap_caps_aligned_alloc` once we can build against esp-idf master
+        // TODO try `heap_caps_aligned_alloc` once we can build against esp-idf master again
         //      https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/mem_alloc.html
         let buffer_ptr = unsafe {
             idf::calloc(block_size as u32,
