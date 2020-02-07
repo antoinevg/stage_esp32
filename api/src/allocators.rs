@@ -13,7 +13,7 @@ extern "C" {
 
 // - global constants ---------------------------------------------------------
 
-const TAG: &str = "wrap::ledc";
+const TAG: &str = "api::allocators";
 
 
 // - global allocator ---------------------------------------------------------

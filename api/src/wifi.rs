@@ -9,8 +9,7 @@ use crate::logger;
 
 // - global constants ---------------------------------------------------------
 
-const TAG: &str = "wrap::wifi";
-const TAG_EVENT: &str = "wrap::wifi_event";
+const TAG: &str = "api::wifi";
 
 static mut WIFI_EVENT_GROUP: Option<idf::EventGroupHandle_t> = None;
 const WIFI_CONNECTED_BIT: u32 = idf::BIT0;
@@ -20,7 +19,6 @@ const WIFI_CONNECTED_BIT: u32 = idf::BIT0;
 
 // TODO init(event_group: idf::EventGroupHandle_t)
 pub unsafe fn init(ssid: &'static str, password: &'static str) -> Result<(), EspError> {
-
     log!(TAG, "initializing wifi");
 
     WIFI_EVENT_GROUP = Some(idf::xEventGroupCreate());
@@ -90,14 +88,16 @@ pub unsafe fn init(ssid: &'static str, password: &'static str) -> Result<(), Esp
 
 #[no_mangle]
 unsafe extern "C" fn event_handler(event_handler_arg: *mut c_void, event_base: idf::esp_event_base_t, event_id: i32, event_data: *mut c_void) -> () {
+    const TAG: &str = "api::wifi::event_handler";
+
     static mut RETRY_COUNT: u32 = 0;
 
     if event_base == idf::WIFI_EVENT {
         if event_id == idf::wifi_event_t::WIFI_EVENT_STA_START as i32 {
-            log!(TAG_EVENT, "WIFI_EVENT.WIFI_EVENT_STA_START");
+            log!(TAG, "WIFI_EVENT.WIFI_EVENT_STA_START");
             idf::esp_wifi_connect();
         } else if event_id == idf::wifi_event_t::WIFI_EVENT_STA_DISCONNECTED as i32 {
-            log!(TAG_EVENT, "WIFI_EVENT.WIFI_EVENT_STA_DISCONNECTED");
+            log!(TAG, "WIFI_EVENT.WIFI_EVENT_STA_DISCONNECTED");
             if RETRY_COUNT < 10 {
                 log!(TAG, "Failed to connect to AP. Trying again: {}", RETRY_COUNT);
                 idf::xEventGroupClearBits(WIFI_EVENT_GROUP.unwrap(), WIFI_CONNECTED_BIT);
@@ -107,22 +107,22 @@ unsafe extern "C" fn event_handler(event_handler_arg: *mut c_void, event_base: i
                 log!(TAG, "Failed to connect to AP. Giving up.");
             }
         } else {
-            log!(TAG_EVENT, "WIFI_EVENT.unknown");
+            log!(TAG, "WIFI_EVENT.unknown");
         }
 
     } else if event_base == idf::IP_EVENT {
         if event_id == idf::ip_event_t::IP_EVENT_STA_GOT_IP as i32 {
-            log!(TAG_EVENT, "IP_EVENT.IP_EVENT_STA_GOT_IP");
+            log!(TAG, "IP_EVENT.IP_EVENT_STA_GOT_IP");
             //ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
             //log!(TAG, "Connected to AP with ip: " IPSTR, IP2STR(&event->ip_info.ip));
             RETRY_COUNT = 0;
             idf::xEventGroupSetBits(WIFI_EVENT_GROUP.unwrap(), WIFI_CONNECTED_BIT);
         } else {
-            log!(TAG_EVENT, "IP_EVENT.unknown");
+            log!(TAG, "IP_EVENT.unknown");
         }
 
     } else {
-        log!(TAG_EVENT, "unknown.unknown");
+        log!(TAG, "unknown.unknown");
     }
 }
 

@@ -6,7 +6,7 @@ use crate::logger;
 
 // - global constants ---------------------------------------------------------
 
-const TAG: &str = "wrap::ledc";
+const TAG: &str = "api::ledc";
 
 const LEDC_BASE_FREQ: u32 = 50_000; // KHz
 

@@ -8,7 +8,7 @@ use crate::logger;
 
 // - global constants ---------------------------------------------------------
 
-const TAG: &str = "wrap::i2s";
+const TAG: &str = "api::i2s";
 
 pub const PORT: idf::i2s_port_t = idf::i2s_port_t::I2S_NUM_0;
 
