@@ -5,8 +5,8 @@ use esp_idf::bindings as idf;
 
 use crate::audio::{Buffer, Config, Interface, OpaqueInterface};
 use crate::driver::Codec;
-use crate::i2s;
 use crate::logger;
+use crate::i2s::{Pins};
 
 
 // - global constants ---------------------------------------------------------
@@ -24,15 +24,16 @@ pub struct Driver {
 unsafe impl Codec for Driver {
     fn new() -> Driver {
         Driver {
-            dma_buffer_ptr: core::ptr::null_mut()
+            dma_buffer_ptr: core::ptr::null_mut(),
         }
     }
 
     fn init(&mut self, config: &Config) -> Result<(), EspError> {
-        log!(TAG, "initialize i2s driver with fs: {}", config.fs);
+        let port = idf::i2s_port_t::I2S_NUM_0;
 
-        unsafe { i2s::init(config.fs, config.block_size)?; }
+        log!(TAG, "initialize audio subsystem with fs:{} block_size:{}", config.fs, config.block_size);
 
+        // allocate memory for dma buffer
         let buffer_size = config.block_size * config.word_size;
         self.dma_buffer_ptr = unsafe {
             idf::calloc(buffer_size as u32,
@@ -42,6 +43,10 @@ unsafe impl Codec for Driver {
             return (idf::ESP_ERR_NO_MEM as idf::esp_err_t).as_result();
         }
         log!(TAG, "allocated memory for dma buffer: {} bytes", buffer_size);
+
+        // initialize i2s peripheral
+        log!(TAG, "initialize i2s peripheral");
+        unsafe { i2s::init(port, config.fs, config.block_size)?; }
 
         Ok(())
     }
@@ -58,8 +63,8 @@ unsafe impl Codec for Driver {
         // read audio data from i2s
         let mut bytes_read = 0;
         unsafe {
-            idf::i2s_read(i2s::PORT,
-                          dma_buffer.as_ptr() as *mut core::ffi::c_void,
+            idf::i2s_read(idf::i2s_port_t::I2S_NUM_0,
+                          self.dma_buffer_ptr as *mut core::ffi::c_void,
                           buffer_size,
                           &mut bytes_read,
                           portMAX_DELAY).as_result()?;
@@ -127,8 +132,8 @@ unsafe impl Codec for Driver {
         // write audio data to i2s
         let mut bytes_written = 0;
         unsafe {
-            idf::i2s_write(i2s::PORT,
-                           dma_buffer.as_ptr() as *const core::ffi::c_void,
+            idf::i2s_write(idf::i2s_port_t::I2S_NUM_0,
+                           self.dma_buffer_ptr as *const core::ffi::c_void,
                            buffer_size,
                            &mut bytes_written,
                            portMAX_DELAY).as_result()?;
@@ -151,6 +156,90 @@ unsafe impl Codec for Driver {
                                     config.block_size).as_result()
         }
     }
+}
+
+
+// - i2s ----------------------------------------------------------------------
+
+pub mod i2s {
+    use cty::{c_char, c_int, c_uint};
+
+    use esp_idf::{AsResult, EspError, portMAX_DELAY};
+    use esp_idf::bindings as idf;
+    use esp_idf::bindings::{
+        ESP_INTR_FLAG_LEVEL1
+    };
+    use esp_idf::bindings::{
+        gpio_num_t,
+        i2s_port_t,
+        i2s_config_t,
+        i2s_mode_t,
+        i2s_bits_per_sample_t,
+        i2s_channel_fmt_t,
+        i2s_comm_format_t,
+        i2s_pin_config_t,
+    };
+    use esp_idf::bindings::{
+        i2s_driver_install,
+        i2s_set_pin,
+        i2s_zero_dma_buffer,
+        i2s_read,
+        i2s_write,
+    };
+
+    use crate::i2s::{Pins};
+
+    const USE_QUEUE: bool = false;
+    const QUEUE_SIZE: c_int = 128;
+    static mut QUEUE: Option<idf::QueueHandle_t> = None;
+    const QUEUE_TYPE_BASE: u8 = 0;
+
+    pub unsafe fn init(port: i2s_port_t, fs: f32, block_size: usize) -> Result<(), EspError> {
+        // configure i2s
+        let i2s_config = i2s_config_t {
+            mode: i2s_mode_t::I2S_MODE_MASTER
+                | i2s_mode_t::I2S_MODE_RX
+                | i2s_mode_t::I2S_MODE_TX
+                | i2s_mode_t::I2S_MODE_DAC_BUILT_IN
+                | i2s_mode_t::I2S_MODE_ADC_BUILT_IN,
+            sample_rate: fs as c_int, //_scaled as c_int,
+            bits_per_sample: i2s_bits_per_sample_t::I2S_BITS_PER_SAMPLE_16BIT,
+            channel_format: i2s_channel_fmt_t::I2S_CHANNEL_FMT_RIGHT_LEFT,
+            communication_format: i2s_comm_format_t::I2S_COMM_FORMAT_I2S_MSB,
+            intr_alloc_flags: ESP_INTR_FLAG_LEVEL1 as i32,
+            dma_buf_count: 4,
+            dma_buf_len: block_size as i32,
+            use_apll: false,
+            //fixed_mclk: 12_288_000,
+            ..i2s_config_t::default()
+        };
+
+        // install driver
+        if USE_QUEUE {
+            let handle: idf::QueueHandle_t = idf::xQueueGenericCreate(QUEUE_SIZE as c_uint,
+                                                                      core::mem::size_of::<*const c_char> as c_uint,
+                                                                      QUEUE_TYPE_BASE);
+            QUEUE = Some(handle);
+            i2s_driver_install(port, &i2s_config, QUEUE_SIZE, QUEUE.unwrap()).as_result()?;
+        } else {
+            i2s_driver_install(port, &i2s_config, 0, core::ptr::null_mut()).as_result()?;
+        }
+
+        // enable dac
+        i2s_set_pin(port, core::ptr::null()).as_result()?; // enables both internal DAC channels
+        idf::i2s_set_dac_mode(idf::i2s_dac_mode_t::I2S_DAC_CHANNEL_BOTH_EN).as_result()?; // gpio 25, 26
+
+        // enable adc
+        idf::i2s_set_adc_mode(idf::adc_unit_t::ADC_UNIT_1, idf::adc1_channel_t::ADC1_CHANNEL_6).as_result()?; // gpio 34
+        //idf::i2s_set_adc_mode(idf::adc_unit_t::ADC_UNIT_1, idf::adc1_channel_t::ADC1_CHANNEL_7).as_result()?; // gpio 35
+        idf::i2s_adc_enable(port).as_result()?;
+
+        // zero dma buffer
+        i2s_zero_dma_buffer(port).as_result()?;
+
+        Ok(())
+    }
+
 }
 
 
