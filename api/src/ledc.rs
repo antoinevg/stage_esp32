@@ -16,7 +16,7 @@ const LEDC_BASE_FREQ: u32 = 50_000; // KHz
 pub unsafe fn init(gpios: &[u8]) -> Result<(), EspError> {
     if gpios.len() >= idf::ledc_channel_t::LEDC_CHANNEL_MAX as usize {
         log!(TAG, "Too many gpios for ledc peripheral. Maximum allowed is: {:?}", idf::ledc_channel_t::LEDC_CHANNEL_MAX);
-        return Err(EspError(idf::ESP_ERR_INVALID_ARG as i32));
+        return Err(idf::ESP_ERR_INVALID_ARG.into());
     }
 
     log!(TAG, "initializing ledc pwm driver");
