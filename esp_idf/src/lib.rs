@@ -78,6 +78,13 @@ impl AsResult<(), EspError> for bindings::esp_err_t {
 }
 
 
+// esp_err_t is an alias for i32 but bindgen generates the ESP_ERR_* constants as u32
+impl From<u32> for EspError {
+    fn from(err: u32) -> Self {
+        EspError(err as i32)
+    }
+}
+
 impl From<bindings::esp_err_t> for EspError {
     fn from(err: bindings::esp_err_t) -> Self {
         EspError(err)

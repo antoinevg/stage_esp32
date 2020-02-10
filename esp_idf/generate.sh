@@ -69,7 +69,7 @@ BINDGEN_FLAGS="${BINDGEN_FLAGS} --conservative-inline-namespaces"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --distrust-clang-mangling"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --enable-function-attribute-detection"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --generate-inline-functions"
-BINDGEN_FLAGS="${BINDGEN_FLAGS} --disable-name-namespacing"
+#BINDGEN_FLAGS="${BINDGEN_FLAGS} --disable-name-namespacing" # no diff
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --disable-nested-struct-naming"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --generate-block"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --impl-debug"
@@ -79,7 +79,7 @@ BINDGEN_FLAGS="${BINDGEN_FLAGS} --with-derive-eq"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --with-derive-partialeq"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --use-array-pointers-in-arguments"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --no-layout-tests"
-BINDGEN_FLAGS="${BINDGEN_FLAGS} --no-prepend-enum-name"
+#BINDGEN_FLAGS="${BINDGEN_FLAGS} --no-prepend-enum-name" # no diff
 
 BINDGEN_OPTIONS="--output src/bindings.rs"
 BINDGEN_OPTIONS="${BINDGEN_OPTIONS} --rust-target 1.36"
