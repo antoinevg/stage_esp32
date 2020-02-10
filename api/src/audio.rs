@@ -18,6 +18,9 @@ use crate::driver::sgtl5000;
 
 const TAG: &str = "api::audio";
 
+const CODEC_NOTIFY_BIT_THREAD_READY: u32 = 0b01;
+const CODEC_NOTIFY_BIT_CODEC_READY:  u32 = 0b10;
+
 
 // - types --------------------------------------------------------------------
 
@@ -44,6 +47,9 @@ pub struct Interface<'a, D> {
     pub config: Config,
     pub codec: D,
     pub closure: Box<dyn FnMut(f32, usize, &mut Buffer) + 'a>,
+
+    task_thread: idf::TaskHandle_t,
+    task_root:   idf::TaskHandle_t,
 }
 
 
@@ -59,6 +65,8 @@ where C: Codec {
             },
             codec: C::new(),
             closure: Box::new(closure),
+            task_thread: &mut unsafe { core::mem::zeroed::<c_void>() },
+            task_root:   &mut unsafe { core::mem::zeroed::<c_void>() },
         }
     }
 
@@ -71,8 +79,8 @@ where C: Codec {
     }
 
     pub fn start(&mut self) -> Result<(), EspError> {
-        // initialize codec
-        self.codec.init(&mut self.config)?;
+        // get task handle
+        self.task_root = unsafe { idf::xTaskGetCurrentTaskHandle() };
 
         // set up audio callback
         #[no_mangle]
@@ -91,8 +99,9 @@ where C: Codec {
         let stack_depth = 8192;
         let priority = 5;
         let core_id = 1;
-        let mut task_handle = unsafe { core::mem::zeroed::<c_void>() };
-        let task_handle_ptr = &mut task_handle as *mut _ as *mut idf::TaskHandle_t;
+        //let mut task_handle = unsafe { core::mem::zeroed::<c_void>() };
+        //let task_handle_ptr = &mut task_handle as *mut _ as *mut idf::TaskHandle_t;
+        let task_handle_ptr = &mut self.task_thread as *mut _ as *mut idf::TaskHandle_t;
         unsafe {
             idf::xTaskCreatePinnedToCore(Some(_Stage_api_audio_task_closure_wrapper),
                                          "audio::thread".as_bytes().as_ptr() as *const i8,
@@ -101,6 +110,20 @@ where C: Codec {
                                          priority,
                                          task_handle_ptr,
                                          core_id);
+        }
+
+        log!(TAG, "wait for audio thread startup to complete");
+        let mut bits: u32 = 0;
+        unsafe { idf::xTaskNotifyWait(0, 0, &mut bits, portMAX_DELAY); }
+
+        // initialize codec
+        self.codec.init(&mut self.config)?;
+
+        // let audio thread know the codec is ready
+        log!(TAG, "codec initialization is complete");
+        unsafe {
+            idf::xTaskNotify(self.task_thread, CODEC_NOTIFY_BIT_CODEC_READY,
+                             idf::eNotifyAction::eSetValueWithOverwrite);
         }
 
         Ok(())
@@ -128,7 +151,20 @@ where C: Codec {
             panic!("api::audio::thread failed to allocate memory for callback buffer");
         }
         log!(TAG, "allocated memory for callback buffer: {} bytes", buffer_size);
+
+        // tell main task that the thread has started
         log!(TAG, "starting audio with fs: {} blocksize: {}", fs, block_size);
+        unsafe {
+            idf::xTaskNotify(self.task_root, CODEC_NOTIFY_BIT_THREAD_READY,
+                             idf::eNotifyAction::eSetValueWithOverwrite);
+        }
+
+        // block until codec is ready
+        log!(TAG, "wait for codec initialization to complete");
+        let mut bits: u32 = 0;
+        unsafe {
+            idf::xTaskNotifyWait(0, 0, &mut bits, portMAX_DELAY);
+        }
 
         //let mut state = State::new();
         let mut mux: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;

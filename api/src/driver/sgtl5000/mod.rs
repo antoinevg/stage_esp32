@@ -16,9 +16,6 @@ pub mod i2c;
 
 const TAG: &str = "api::driver::sgtl5000";
 
-const CODEC_NOTIFY_BIT_THREAD_READY: u32 = 0b01;
-const CODEC_NOTIFY_BIT_CODEC_READY:  u32 = 0b10;
-
 
 // - driver -------------------------------------------------------------------
 
