@@ -6,7 +6,6 @@ use cty::{c_int, c_void};
 use esp_idf::bindings as idf;
 use esp_idf::{AsResult, EspError, portMAX_DELAY, portMUX_INITIALIZER_UNLOCKED};
 
-use crate::i2s;
 use crate::logger;
 use crate::wavetable;
 
@@ -43,7 +42,7 @@ pub struct Config {
 
 pub struct Interface<'a, D> {
     pub config: Config,
-    codec: D,
+    pub codec: D,
     pub closure: Box<dyn FnMut(f32, usize, &mut Buffer) + 'a>,
 }
 
