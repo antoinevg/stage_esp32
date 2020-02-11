@@ -1,3 +1,13 @@
+use esp_idf::bindings::gpio_num_t;
+
+use crate::logger;
+
+
+// - global constants ---------------------------------------------------------
+
+const TAG: &str = "api::blinky";
+
+
 // - registers ----------------------------------------------------------------
 
 // https://github.com/espressif/esp-idf/blob/master/components/soc/esp32/include/soc/gpio_reg.h
@@ -11,20 +21,21 @@ mod gpio_reg {
 
 // - implementation -----------------------------------------------------------
 
-pub fn set_led(idx: u8, val: bool) {
+pub fn set_led(gpio: gpio_num_t, val: bool) {
     if val {
         unsafe {
-            core::ptr::write_volatile(gpio_reg::GPIO_OUT_W1TS_REG as *mut u32, 0x1 << idx);
+            core::ptr::write_volatile(gpio_reg::GPIO_OUT_W1TS_REG as *mut u32, 0x1 << (gpio as u8));
         }
     } else {
        unsafe {
-            core::ptr::write_volatile(gpio_reg::GPIO_OUT_W1TC_REG as *mut u32, 0x1 << idx);
+            core::ptr::write_volatile(gpio_reg::GPIO_OUT_W1TC_REG as *mut u32, 0x1 << (gpio as u8));
         }
     }
 }
 
 
-pub fn configure_pin_as_output(gpio: u8) {
+pub fn configure_pin_as_output(gpio: gpio_num_t) {
+    log!(TAG, "configure pin for blinky: {:?}", gpio);
     unsafe {
         core::ptr::write_volatile(gpio_reg::GPIO_ENABLE_W1TS_REG as *mut _, 0x1 << (gpio as u32));
 

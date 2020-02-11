@@ -13,9 +13,9 @@ const LEDC_BASE_FREQ: u32 = 50_000; // KHz
 
 // - exports ------------------------------------------------------------------
 
-pub unsafe fn init(gpios: &[u8]) -> Result<(), EspError> {
-    if gpios.len() >= idf::ledc_channel_t::LEDC_CHANNEL_MAX as usize {
-        log!(TAG, "Too many gpios for ledc peripheral. Maximum allowed is: {:?}", idf::ledc_channel_t::LEDC_CHANNEL_MAX);
+pub unsafe fn init(pins: &[idf::gpio_num_t]) -> Result<(), EspError> {
+    if pins.len() >= idf::ledc_channel_t::LEDC_CHANNEL_MAX as usize {
+        log!(TAG, "Too many pins for ledc peripheral. Maximum allowed is: {:?}", idf::ledc_channel_t::LEDC_CHANNEL_MAX);
         return Err(idf::ESP_ERR_INVALID_ARG.into());
     }
 
@@ -31,25 +31,26 @@ pub unsafe fn init(gpios: &[u8]) -> Result<(), EspError> {
     idf::ledc_timer_config(&timer);
 
     // configure ledc pwm channels
-    for (channel, gpio) in gpios.iter().enumerate() {
+    log!(TAG, "configure pins for ledc pwm driver: {:?}", pins);
+    for (channel, pin) in pins.iter().enumerate() {
         let channel = core::mem::transmute::<usize, idf::ledc_channel_t>(channel);
         let config = idf::ledc_channel_config_t {
             channel: channel,
             duty: 0,
-            gpio_num: *gpio as i32,
+            gpio_num: *pin as i32,
             speed_mode: idf::ledc_mode_t::LEDC_HIGH_SPEED_MODE,
             hpoint: 0,
             timer_sel: idf::ledc_timer_t::LEDC_TIMER_0,
             ..idf::ledc_channel_config_t::default()
         };
-        log!(TAG, "configuring {:?} -> GPIO_{}", channel, gpio);
+        log!(TAG, "configuring {:?} -> GPIO_{:?}", channel, pin);
         idf::ledc_channel_config(&config);
     }
 
     idf::ledc_fade_func_install(0);
 
     // set default values
-    for (channel, _)  in gpios.iter().enumerate() {
+    for (channel, _)  in pins.iter().enumerate() {
         let channel = core::mem::transmute::<usize, idf::ledc_channel_t>(channel);
         idf::ledc_set_duty(idf::ledc_mode_t::LEDC_HIGH_SPEED_MODE, channel, 255);
         idf::ledc_update_duty(idf::ledc_mode_t::LEDC_HIGH_SPEED_MODE, channel);

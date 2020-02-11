@@ -50,10 +50,11 @@ const NACK_VAL: bool      = true;  // I2C nack value
 // - initialization -----------------------------------------------------------
 
 pub unsafe fn init(port: i2c_port_t, pins: Pins, config: &audio::Config) -> Result<(), EspError> {
+    log!(TAG, "configure pins for i2c peripheral: {:?}", pins);
     let i2c_config = i2c_config_t {
         mode:  i2c_mode_t::I2C_MODE_MASTER,
-        scl_io_num:  gpio_num_t::GPIO_NUM_22, //core::mem::transmute::<i32, gpio_num_t>(pins.scl as i32),
-        sda_io_num:  gpio_num_t::GPIO_NUM_21, //core::mem::transmute::<i32, gpio_num_t>(pins.sda as i32),
+        scl_io_num:  pins.scl,
+        sda_io_num:  pins.sda,
         scl_pullup_en:  gpio_pullup_t::GPIO_PULLUP_ENABLE,
         sda_pullup_en:  gpio_pullup_t::GPIO_PULLUP_ENABLE,
         __bindgen_anon_1: idf::i2c_config_t__bindgen_ty_1 {

@@ -244,15 +244,8 @@ pub mod i2s {
         i2s_driver_install(port, &i2s_config, 0, core::ptr::null_mut()).as_result()?;
 
         // configure pins for i2s peripheral
-        log!(TAG, "configure pins for i2s peripheral");
-        //i2s_set_pin(port, &pins.into()).as_result()?;
-        let pins = i2s_pin_config_t {
-            bck_io_num:   gpio_num_t::GPIO_NUM_5  as i32,   // BCLK
-            ws_io_num:    gpio_num_t::GPIO_NUM_13 as i32,   // LRCLK
-            data_in_num:  gpio_num_t::GPIO_NUM_32 as i32,   // DIN
-            data_out_num: gpio_num_t::GPIO_NUM_27 as i32,   // DOUT
-        };
-        i2s_set_pin(port, &pins).as_result()?;
+        log!(TAG, "configure pins for i2s peripheral: {:?}", pins);
+        i2s_set_pin(port, &pins.into()).as_result()?;
 
         // zero dma buffer
         i2s_zero_dma_buffer(port).as_result()?;
