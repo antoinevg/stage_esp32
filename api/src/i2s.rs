@@ -45,14 +45,3 @@ impl From<Pins> for i2s_pin_config_t {
         }
     }
 }
-
-impl From<i2s_pin_config_t> for Pins {
-    fn from(i2s_pin_config: i2s_pin_config_t) -> Self {
-        Pins {
-            bclk:  unsafe { core::mem::transmute::<i32, gpio_num_t>(i2s_pin_config.bck_io_num)   },
-            lrclk: unsafe { core::mem::transmute::<i32, gpio_num_t>(i2s_pin_config.ws_io_num)    },
-            din:   unsafe { core::mem::transmute::<i32, gpio_num_t>(i2s_pin_config.data_in_num)  },
-            dout:  unsafe { core::mem::transmute::<i32, gpio_num_t>(i2s_pin_config.data_out_num) },
-        }
-    }
-}
