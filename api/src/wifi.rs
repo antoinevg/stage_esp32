@@ -22,12 +22,9 @@ pub unsafe fn init(ssid: &'static str, password: &'static str) -> Result<(), Esp
     log!(TAG, "initializing wifi");
 
     WIFI_EVENT_GROUP = Some(idf::xEventGroupCreate());
+    idf::esp_event_loop_create_default().as_result()?;
 
     idf::tcpip_adapter_init();
-
-    //idf::esp_netif_init().as_result()?;
-    idf::esp_event_loop_create_default().as_result()?;
-    //idf::esp_netif_create_default_wifi_sta();
     let cfg: idf::wifi_init_config_t = wifi_init_config_default();
     idf::esp_wifi_init(&cfg).as_result()?;
 
