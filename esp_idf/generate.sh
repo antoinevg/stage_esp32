@@ -2,13 +2,14 @@
 
 # - configuration -------------------------------------------------------------
 
-XTENSA_ROOT=/mnt/flowdsp/deps/versions/rust-xtensa
-IDF_PATH=/mnt/flowdsp/deps/esp-idf
-DOT_ESPRESSIF=~/.espressif
+FLOWDSP_DEPS=/mnt/flowdsp/deps
+
 
 # - paths ---------------------------------------------------------------------
 
-LLVM_ROOT=${XTENSA_ROOT}/llvm_build
+IDF_PATH=${FLOWDSP_DEPS}/esp-idf
+ESP_RUST=${FLOWDSP_DEPS}/esp-rust
+LLVM_ROOT=${ESP_RUST}/output/llvm
 
 ENVPATH="~/.cargo/bin"
 ENVPATH="${ENVPATH}:${LLVM_ROOT}/bin"
@@ -18,9 +19,8 @@ ENVPATH="${ENVPATH}:${LLVM_ROOT}/bin"
 
 IDF_COMPONENTS=${IDF_PATH}/components
 
-INCLUDES="${INCLUDES} -I${LLVM_ROOT}/lib/clang/6.0.1/include"
-
-#INCLUDES="${INCLUDES} -I${DOT_ESPRESSIF}/tools/xtensa-esp32-elf/esp-2019r2-8.2.0/xtensa-esp32-elf/xtensa-esp32-elf/include"
+INCLUDES="${INCLUDES} -I${LLVM_ROOT}/lib/clang/9.0.1/include"
+#INCLUDES="${INCLUDES} -I${ESP_RUST}/output/esp-2019r2-8.2.0-osx/xtensa-esp32-elf/xtensa-esp32-elf/include"
 
 INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/driver/include"
 INCLUDES="${INCLUDES} -I${IDF_COMPONENTS}/esp32/include"
@@ -79,7 +79,7 @@ BINDGEN_FLAGS="${BINDGEN_FLAGS} --with-derive-eq"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --with-derive-partialeq"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --use-array-pointers-in-arguments"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --no-layout-tests"
-#BINDGEN_FLAGS="${BINDGEN_FLAGS} --no-prepend-enum-name" # no diff
+#BINDGEN_FLAGS="${BINDGEN_FLAGS} --no-prepend-enum-name" # no diff w/ rust style enums
 
 BINDGEN_OPTIONS="--output src/bindings.rs"
 BINDGEN_OPTIONS="${BINDGEN_OPTIONS} --rust-target 1.36"

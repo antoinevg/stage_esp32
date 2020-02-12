@@ -113,10 +113,10 @@ impl<T> ::core::fmt::Debug for __IncompleteArrayField<T> {
 }
 pub const __llvm__: u32 = 1;
 pub const __clang__: u32 = 1;
-pub const __clang_major__: u32 = 6;
+pub const __clang_major__: u32 = 9;
 pub const __clang_minor__: u32 = 0;
 pub const __clang_patchlevel__: u32 = 1;
-pub const __clang_version__ : & 'static [ u8 ; 183usize ] = b"6.0.1 (https://github.com/espressif/clang-xtensa.git 248d9ce8765248d953c3e5ef4022fb350bbe6c51) (https://github.com/espressif/llvm-xtensa.git 757e18f722dbdcd98b8479e25041b1eee1128ce9)\0" ;
+pub const __clang_version__ : & 'static [ u8 ; 95usize ] = b"9.0.1 (https://github.com/espressif/llvm-project.git 96ef209fd7cb4ad374e111fcf02491c4e1de1845)\0" ;
 pub const __GNUC_MINOR__: u32 = 2;
 pub const __GNUC_PATCHLEVEL__: u32 = 1;
 pub const __GNUC__: u32 = 4;
@@ -133,7 +133,7 @@ pub const __OPENCL_MEMORY_SCOPE_DEVICE: u32 = 2;
 pub const __OPENCL_MEMORY_SCOPE_ALL_SVM_DEVICES: u32 = 3;
 pub const __OPENCL_MEMORY_SCOPE_SUB_GROUP: u32 = 4;
 pub const __PRAGMA_REDEFINE_EXTNAME: u32 = 1;
-pub const __VERSION__ : & 'static [ u8 ; 206usize ] = b"4.2.1 Compatible Clang 6.0.1 (https://github.com/espressif/clang-xtensa.git 248d9ce8765248d953c3e5ef4022fb350bbe6c51) (https://github.com/espressif/llvm-xtensa.git 757e18f722dbdcd98b8479e25041b1eee1128ce9)\0" ;
+pub const __VERSION__ : & 'static [ u8 ; 101usize ] = b"Clang 9.0.1 (https://github.com/espressif/llvm-project.git 96ef209fd7cb4ad374e111fcf02491c4e1de1845)\0" ;
 pub const __OBJC_BOOL_IS_BOOL: u32 = 0;
 pub const __CONSTANT_CFSTRINGS__: u32 = 1;
 pub const __ORDER_LITTLE_ENDIAN__: u32 = 1234;
@@ -197,16 +197,6 @@ pub const __UINTPTR_FMTu__: &'static [u8; 2usize] = b"u\0";
 pub const __UINTPTR_FMTx__: &'static [u8; 2usize] = b"x\0";
 pub const __UINTPTR_FMTX__: &'static [u8; 2usize] = b"X\0";
 pub const __UINTPTR_WIDTH__: u32 = 32;
-pub const __FLT16_HAS_DENORM__: u32 = 1;
-pub const __FLT16_DIG__: u32 = 3;
-pub const __FLT16_DECIMAL_DIG__: u32 = 5;
-pub const __FLT16_HAS_INFINITY__: u32 = 1;
-pub const __FLT16_HAS_QUIET_NAN__: u32 = 1;
-pub const __FLT16_MANT_DIG__: u32 = 11;
-pub const __FLT16_MAX_10_EXP__: u32 = 4;
-pub const __FLT16_MAX_EXP__: u32 = 15;
-pub const __FLT16_MIN_10_EXP__: i32 = -13;
-pub const __FLT16_MIN_EXP__: i32 = -14;
 pub const __FLT_HAS_DENORM__: u32 = 1;
 pub const __FLT_DIG__: u32 = 6;
 pub const __FLT_DECIMAL_DIG__: u32 = 9;
@@ -14276,18 +14266,18 @@ extern "C" {
 extern "C" {
     pub fn fread(
         arg1: *mut std::os::raw::c_void,
-        _size: usize,
-        _n: usize,
+        _size: std::os::raw::c_uint,
+        _n: std::os::raw::c_uint,
         arg2: *mut FILE,
-    ) -> usize;
+    ) -> std::os::raw::c_uint;
 }
 extern "C" {
     pub fn fwrite(
         arg1: *const std::os::raw::c_void,
-        _size: usize,
-        _n: usize,
+        _size: std::os::raw::c_uint,
+        _n: std::os::raw::c_uint,
         arg2: *mut FILE,
-    ) -> usize;
+    ) -> std::os::raw::c_uint;
 }
 extern "C" {
     pub fn fgetpos(arg1: *mut FILE, arg2: *mut fpos_t) -> std::os::raw::c_int;
@@ -45599,7 +45589,7 @@ extern "C" {
     pub fn bcmp(
         arg1: *const std::os::raw::c_void,
         arg2: *const std::os::raw::c_void,
-        arg3: usize,
+        arg3: std::os::raw::c_uint,
     ) -> std::os::raw::c_int;
 }
 extern "C" {
