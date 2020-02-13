@@ -49,10 +49,10 @@ pub unsafe fn init(pins: &[idf::gpio_num_t]) -> Result<(), EspError> {
 
     idf::ledc_fade_func_install(0);
 
-    // set default values
+    // set default duty-cycle to 25%
     for (channel, _)  in pins.iter().enumerate() {
         let channel = core::mem::transmute::<usize, idf::ledc_channel_t>(channel);
-        idf::ledc_set_duty(idf::ledc_mode_t::LEDC_HIGH_SPEED_MODE, channel, 255);
+        idf::ledc_set_duty(idf::ledc_mode_t::LEDC_HIGH_SPEED_MODE, channel, 64);
         idf::ledc_update_duty(idf::ledc_mode_t::LEDC_HIGH_SPEED_MODE, channel);
     }
 
