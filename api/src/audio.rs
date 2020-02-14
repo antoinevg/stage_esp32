@@ -185,8 +185,8 @@ where C: Codec {
             unsafe { idf::vTaskEnterCritical(&mut mux); }
             /*for f in 0..num_frames {
                 let x = f * num_channels;
-                state.channel_1 = test_signal_sin(fs, 1000., state.channel_1.0);
-                state.channel_2 = test_signal_saw(fs, 1000., state.channel_2.0);
+                state.channel_1 = testsignal_sin(fs, 1000., state.channel_1.0);
+                state.channel_2 = testsignal_saw(fs, 1000., state.channel_2.0);
                 buffer[x+0] = state.channel_2.1; // right
                 buffer[x+1] = state.channel_1.1; // left
             }*/
@@ -228,8 +228,8 @@ fn test_callback(fs: f32, num_channels: usize, buffer: &mut Buffer, state: &mut 
     for f in 0..num_frames {
         let x = f * num_channels;
 
-        state.channel_1 = test_signal_sin(fs, 1000., state.channel_1.0);
-        state.channel_2 = test_signal_saw(fs, 1000., state.channel_2.0);
+        state.channel_1 = testsignal_sin(fs, 1000., state.channel_1.0);
+        state.channel_2 = testsignal_saw(fs, 1000., state.channel_2.0);
 
         buffer[x+0] = state.channel_2.1; // right
         buffer[x+1] = state.channel_1.1; // left
@@ -242,8 +242,8 @@ fn test_callback_inline(fs: f32, num_channels: usize, buffer: &mut Buffer, state
     for f in 0..num_frames {
         let x = f * num_channels;
 
-        state.channel_1 = test_signal_sin(fs, 1000., state.channel_1.0);
-        state.channel_2 = test_signal_saw(fs, 1000., state.channel_2.0);
+        state.channel_1 = testsignal_sin(fs, 1000., state.channel_1.0);
+        state.channel_2 = testsignal_saw(fs, 1000., state.channel_2.0);
 
         buffer[x+0] = state.channel_2.1; // right
         buffer[x+1] = state.channel_1.1; // left
@@ -271,7 +271,7 @@ fn interpolate_linear(wt: &[f32], index: f32) -> f32 {
 
 
 #[inline(always)]
-pub fn test_signal(fs: f32, f: f32, phase: f32) -> (f32, f32) {
+pub fn testsignal(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let sample = (phase * 2.) - 1.;
 
     let dx = f / fs;
@@ -283,7 +283,7 @@ pub fn test_signal(fs: f32, f: f32, phase: f32) -> (f32, f32) {
 
 
 #[inline(always)]
-pub fn test_signal_cosf(fs: f32, f: f32, phase: f32) -> (f32, f32) {
+pub fn testsignal_cosf(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let dx = f / fs;
     let w = 2. * PI * dx;
 
@@ -296,7 +296,7 @@ pub fn test_signal_cosf(fs: f32, f: f32, phase: f32) -> (f32, f32) {
 
 
 #[inline(always)]
-pub fn test_signal_sin(fs: f32, f: f32, phase: f32) -> (f32, f32) {
+pub fn testsignal_sin(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let wt_index = phase * (wavetable::LENGTH - 1) as f32;
     //let sample = wavetable::SIN[wt_index as usize];
     let sample = interpolate_linear(&wavetable::SIN, wt_index);
@@ -310,7 +310,7 @@ pub fn test_signal_sin(fs: f32, f: f32, phase: f32) -> (f32, f32) {
 
 
 #[inline(always)]
-pub fn test_signal_saw(fs: f32, f: f32, phase: f32) -> (f32, f32) {
+pub fn testsignal_saw(fs: f32, f: f32, phase: f32) -> (f32, f32) {
     let wt_index = phase * (wavetable::LENGTH - 1) as f32;
     //let sample = wavetable::SAW[wt_index as usize];
     let sample = interpolate_linear(&wavetable::SAW, wt_index);
