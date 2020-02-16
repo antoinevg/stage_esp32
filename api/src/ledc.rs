@@ -44,7 +44,7 @@ const TAG: &str = "api::ledc";
 //    2.44 kHz -> 15 bits
 //    1.22 kHz -> 16 bits
 //    ...
-const FREQ_HZ: u32 = 19_531;
+const FREQ_HZ: u32 = 19_500;
 const DUTY_RESOLUTION: ledc_timer_bit_t = ledc_timer_bit_t::LEDC_TIMER_12_BIT;
 pub const DUTY_SCALE: f32 = ((2 << ((DUTY_RESOLUTION as u32) - 1)) - 1) as f32;
 
