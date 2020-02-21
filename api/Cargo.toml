@@ -19,5 +19,6 @@ codegen-units = 1
 [dependencies]
 cty       = "0.2.1"
 num_enum  = { version = "0.4.2", default-features = false }
+#num_enum  = { path = "../upstream/num_enum.git/num_enum", default-features = false }
 cstr_core = { git = "https://github.com/antoinevg/cstr_core.git" }
 esp_idf   = { path = "../esp_idf" }
