@@ -119,14 +119,9 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
     blinky::delay(delay);
     write(port, address, 0x00, 0xAF); // turn on oled panel
 
-    // test data
+    // blit a test pattern to the display
     const width: usize = 128;
     const height: usize = 64;
-    let mut frame_buffer: [u8; width * height] = [0; width * height];
-    for p in 0..(width * height) {
-        frame_buffer[p] = (width % 2 == 0) as u8;
-    }
-    let mask = (idf::esp_random() % 255) as usize;
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
         write(port, address, 0x00, page_address); // set page address
@@ -136,12 +131,10 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
         // write data
         for x in 0..width {
             let index = x + (width * page);
-            let byte = (index % mask) as u8; //frame_buffer[index];
+            let byte = if x % 16 == 0 { 255 } else { 1 };
             write(port, address, 0x40, byte);
-            //log!(TAG, "{} -> {}", index, byte);
         }
     }
-
 
     Ok(())
 }
