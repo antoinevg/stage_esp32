@@ -1,6 +1,6 @@
 use esp_idf::{AsResult, EspError};
 
-use crate::audio::{Config, OpaqueInterface};
+use crate::audio;
 use crate::logger;
 
 
@@ -8,6 +8,7 @@ use crate::logger;
 
 pub mod adac;
 pub mod sgtl5000;
+pub mod sh1106;
 
 
 // - global constants ---------------------------------------------------------
@@ -20,15 +21,20 @@ const TAG: &str = "api::driver";
 pub unsafe trait Codec {
     fn new() -> Self;
 
-    fn start_c(&self, config: &Config,
-               opaque_interface_ptr: *const OpaqueInterface) -> Result<(), EspError>;
+    fn start_c(&self, config: &audio::Config,
+               opaque_interface_ptr: *const audio::OpaqueInterface) -> Result<(), EspError>;
 
-    fn init(&mut self, config: &Config) -> Result<(), EspError>;
+    fn init(&mut self, config: &audio::Config) -> Result<(), EspError>;
 
-    fn read(&self, config: &Config, callback_buffer: &mut [f32]) -> Result<(), EspError>;
-    fn write(&self, config: &Config, callback_buffer: &[f32]) -> Result<(), EspError>;
+    fn read(&self, config: &audio::Config, callback_buffer: &mut [f32]) -> Result<(), EspError>;
+    fn write(&self, config: &audio::Config, callback_buffer: &[f32]) -> Result<(), EspError>;
+}
 
-    fn test(&self) -> () {
-        log!(TAG, "Codec::test");
-    }
+
+pub unsafe trait Display {
+    fn new() -> Self;
+
+    fn init(&mut self/*, config: &Config*/) -> Result<(), EspError>;
+
+    fn write(&self/*, config: &Config, callback_buffer: &[f32]*/) -> Result<(), EspError>;
 }

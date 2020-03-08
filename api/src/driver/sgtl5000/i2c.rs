@@ -50,7 +50,7 @@ const NACK_VAL: bool      = true;  // I2C nack value
 // - initialization -----------------------------------------------------------
 
 pub unsafe fn init(port: i2c_port_t, pins: Pins, config: &audio::Config) -> Result<(), EspError> {
-    log!(TAG, "configure pins for i2c peripheral: {:?}", pins);
+    log!(TAG, "configure pins for codec peripheral i2c: {:?}", pins);
     let i2c_config = i2c_config_t {
         mode:  i2c_mode_t::I2C_MODE_MASTER,
         scl_io_num:  pins.scl,

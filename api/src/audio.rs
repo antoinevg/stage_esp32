@@ -6,12 +6,9 @@ use cty::{c_int, c_void};
 use esp_idf::bindings as idf;
 use esp_idf::{AsResult, EspError, portMAX_DELAY, portMUX_INITIALIZER_UNLOCKED};
 
+use crate::driver;
 use crate::logger;
 use crate::wavetable;
-
-use crate::driver::Codec;
-use crate::driver::adac;
-use crate::driver::sgtl5000;
 
 
 // - global constants ---------------------------------------------------------
@@ -45,7 +42,7 @@ pub struct Config {
 
 pub struct Interface<'a, D> {
     pub config: Config,
-    pub codec: D,
+    pub driver: D,
     pub closure: Box<dyn FnMut(f32, usize, &mut Buffer) + 'a>,
 
     task_thread: idf::TaskHandle_t,
@@ -53,9 +50,9 @@ pub struct Interface<'a, D> {
 }
 
 
-impl<'a, C> Interface<'a, C>
-where C: Codec {
-    pub fn new<F: FnMut(f32, usize, &mut Buffer) + 'a>(fs: f32, block_size: usize, closure: F) -> Interface<'a, C> {
+impl<'a, D> Interface<'a, D>
+where D: driver::Codec {
+    pub fn new<F: FnMut(f32, usize, &mut Buffer) + 'a>(fs: f32, block_size: usize, closure: F) -> Interface<'a, D> {
         Interface {
             config: Config {
                 fs: fs,
@@ -63,7 +60,7 @@ where C: Codec {
                 word_size: 2,
                 block_size: block_size,
             },
-            codec: C::new(),
+            driver: D::new(),
             closure: Box::new(closure),
             task_thread: &mut unsafe { core::mem::zeroed::<c_void>() },
             task_root:   &mut unsafe { core::mem::zeroed::<c_void>() },
@@ -72,10 +69,10 @@ where C: Codec {
 
     pub fn start_c(&self) -> Result<(), EspError> {
         let opaque_interface_ptr = unsafe {
-            core::mem::transmute::<*const Interface<C>,
+            core::mem::transmute::<*const Interface<D>,
                                    *const OpaqueInterface>(self)
         };
-        self.codec.start_c(&self.config, opaque_interface_ptr)
+        self.driver.start_c(&self.config, opaque_interface_ptr)
     }
 
     pub fn start(&mut self) -> Result<(), EspError> {
@@ -117,7 +114,7 @@ where C: Codec {
         unsafe { idf::xTaskNotifyWait(0, 0, &mut bits, portMAX_DELAY); }
 
         // initialize codec
-        self.codec.init(&mut self.config)?;
+        self.driver.init(&mut self.config)?;
 
         // let audio thread know the codec is ready
         log!(TAG, "codec initialization is complete");
@@ -174,10 +171,10 @@ where C: Codec {
             };
 
             // read buffer from driver
-            match self.codec.read(&self.config, &mut buffer) {
+            match self.driver.read(&self.config, &mut buffer) {
                 Ok(()) => (),
                 Err(EspError(e)) => {
-                    log!(TAG, "codec.read failed with: {:?}", e);
+                    log!(TAG, "driver.read failed with: {:?}", e);
                 }
             }
 
@@ -196,10 +193,10 @@ where C: Codec {
             unsafe { idf::vTaskExitCritical(&mut mux); }
 
             // write buffer to driver
-            match self.codec.write(&self.config, &buffer) {
+            match self.driver.write(&self.config, &buffer) {
                 Ok(()) => (),
                 Err(EspError(e)) => {
-                    log!(TAG, "codec.write failed with: {:?}", e);
+                    log!(TAG, "driver.write failed with: {:?}", e);
                 }
             }
         }
