@@ -51,6 +51,8 @@ const NACK_VAL: bool      = true;  // I2C nack value
 
 pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
     log!(TAG, "configure pins for display peripheral i2c: {:?}", pins);
+    /* TODO is there a way to check if the i2c interface is already configured or should we be
+            passing them in independently?
     let i2c_config = i2c_config_t {
         mode:  i2c_mode_t::I2C_MODE_MASTER,
         scl_io_num:  pins.scl,
@@ -68,7 +70,7 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
                        0, // rx buffer length (slave only)
                        0, // tx buffer length (slave only)
                        0).as_result()?; //ESP_INTR_FLAG_LEVEL1 as i32).as_result()?;
-
+    */
     Ok(())
 }
 
@@ -78,23 +80,12 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
 
     // reset display
     log!(TAG, "resetting display peripheral");
-    let delay = (0.001 * 168_000_000.) as u32;
-    let gpio_reset = idf::gpio_num_t::GPIO_NUM_12;
-    /*blinky::configure_pin_as_output(gpio_reset)?;
-    blinky::set_led(gpio_reset, true)?;
-    blinky::delay(delay);
-    blinky::set_led(gpio_reset, false)?;
-    blinky::delay(delay);
-    blinky::set_led(gpio_reset, true)?;
-    blinky::delay(delay);*/
+    let delay = 1; //(0.001 * 168_000_000.) as u32;
 
-    // check if display is reachable over i2s
-    //let address = 0x00;
-    //let value = read(port, address, 0x00); //Register::CHIP_ID)?;
-    //log!(TAG, "Result is {:?}", value);
-    /*log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value?);
-    if (value & 0xFF00) != 0xA000 {
-        log!(TAG, "unknown codec chip ID: 0x{:x}", value);
+    // TODO check if display is reachable over i2s
+    /*let value = read(port, address, 0x00); //Register::CHIP_ID)?;
+    if (value & 0xFF00) != 0x3c00 {
+        log!(TAG, "unknown display chip ID: 0x{:x}", value);
         return Err(idf::ESP_ERR_INVALID_RESPONSE.into());
     }
     log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value);*/
@@ -125,28 +116,23 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
     write(port, address, 0x00, 0xA4); //  Disable Entire Display On (0xa4/0xa5)
     write(port, address, 0x00, 0xA6); //  Disable Inverse Display On (0xa6/a7)
 
-
-    // TODO time.sleep(0.1);
-    //blinky::delay(delay);
+    blinky::delay(delay);
     write(port, address, 0x00, 0xAF); // turn on oled panel
 
     // test data
     const width: usize = 128;
     const height: usize = 64;
     let mut frame_buffer: [u8; width * height] = [0; width * height];
-
     for p in 0..(width * height) {
         frame_buffer[p] = (width % 2 == 0) as u8;
     }
-
     let mask = (idf::esp_random() % 255) as usize;
-
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
         write(port, address, 0x00, page_address); // set page address
         write(port, address, 0x00, 0x02); // set low column address
         write(port, address, 0x00, 0x10); // set high column address
-        //blinky::delay(delay);
+        blinky::delay(delay);
         // write data
         for x in 0..width {
             let index = x + (width * page);
