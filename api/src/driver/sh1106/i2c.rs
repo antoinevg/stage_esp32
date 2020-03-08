@@ -80,7 +80,15 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
 
     // reset display
     log!(TAG, "resetting display peripheral");
-    let delay = 1; //(0.001 * 168_000_000.) as u32;
+    let delay = (0.001 * 168_000_000.) as u32;
+    let gpio_reset = idf::gpio_num_t::GPIO_NUM_12;
+    blinky::configure_pin_as_output(gpio_reset)?;
+    blinky::set_led(gpio_reset, true)?;
+    blinky::delay(delay * 10);
+    blinky::set_led(gpio_reset, false)?;
+    blinky::delay(delay * 200);
+    blinky::set_led(gpio_reset, true)?;
+    blinky::delay(delay * 10);
 
     // TODO check if display is reachable over i2s
     /*let value = read(port, address, 0x00); //Register::CHIP_ID)?;
@@ -119,21 +127,23 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
     blinky::delay(delay);
     write(port, address, 0x00, 0xAF); // turn on oled panel
 
-    // blit a test pattern to the display
+    // generate data for a test pattern
     const width: usize = 128;
     const height: usize = 64;
+    let mut page_buffer: [u8; width] = [0x00; width];
+    for x in 0..width {
+        let byte = if x % 8 == 0 { 255 } else { 1 };
+        page_buffer[x] = byte;
+    }
+
+    // blit test pattern to the display
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
-        write(port, address, 0x00, page_address); // set page address
-        write(port, address, 0x00, 0x02); // set low column address
-        write(port, address, 0x00, 0x10); // set high column address
+        write(port, address, 0x00, page_address);       // set page address
+        write(port, address, 0x00, 0x02);               // set low column address
+        write(port, address, 0x00, 0x10);               // set high column address
         blinky::delay(delay);
-        // write data
-        for x in 0..width {
-            let index = x + (width * page);
-            let byte = if x % 16 == 0 { 255 } else { 1 };
-            write(port, address, 0x40, byte);
-        }
+        write_bytes(port, address, 0x40, &page_buffer); // write data for page
     }
 
     Ok(())
@@ -200,6 +210,35 @@ unsafe fn write(port: i2c_port_t, address: u8, register: Register, byte: u8) -> 
     let register: u8 = register as u8; //.into();
     i2c_master_write_byte(cmd, register, ACK_CHECK_EN).as_result()?;
     i2c_master_write_byte(cmd, byte, ACK_CHECK_EN).as_result()?;
+
+    // stop
+    i2c_master_stop(cmd).as_result()?;
+
+    // send
+    i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
+    i2c_cmd_link_delete(cmd);
+
+    Ok(())
+}
+
+
+unsafe fn write_bytes(port: i2c_port_t, address: u8, register: Register, bytes: &[u8]) -> Result<(), EspError> {
+    let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
+
+    // start
+    i2c_master_start(cmd).as_result()?;
+
+    // set write bit for address
+    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
+
+    // select register
+    let register: u8 = register as u8; //.into();
+    i2c_master_write_byte(cmd, register, ACK_CHECK_DIS).as_result()?;
+
+    // write bytes to register
+    for byte in bytes {
+        i2c_master_write_byte(cmd, *byte, ACK_CHECK_DIS).as_result()?;
+    }
 
     // stop
     i2c_master_stop(cmd).as_result()?;
