@@ -127,10 +127,21 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
     blinky::delay(delay);
     write(port, address, 0x00, 0xAF); // turn on oled panel
 
+    // blank display
+    let mut page_buffer: [u8; width] = [0x00; width];
+    for page in 0usize..8 {
+        let page_address = (0xb0 + page) as u8;
+        write(port, address, 0x00, page_address);       // set page address
+        write(port, address, 0x00, 0x02);               // set low column address
+        write(port, address, 0x00, 0x10);               // set high column address
+        write_bytes(port, address, 0x40, &page_buffer); // write data for page
+    }
+
+    blinky::delay(delay);
+
     // generate data for a test pattern
     const width: usize = 128;
     const height: usize = 64;
-    let mut page_buffer: [u8; width] = [0x00; width];
     for x in 0..width {
         let byte = if x % 8 == 0 { 255 } else { 1 };
         page_buffer[x] = byte;
@@ -235,9 +246,8 @@ unsafe fn write_bytes(port: i2c_port_t, address: u8, register: Register, bytes: 
     i2c_master_write_byte(cmd, register, ACK_CHECK_DIS).as_result()?;
 
     // write bytes to register
-    for byte in bytes {
-        i2c_master_write_byte(cmd, *byte, ACK_CHECK_DIS).as_result()?;
-    }
+    let bytes_ptr = core::mem::transmute::<*const u8, *mut u8>(bytes.as_ptr());
+    i2c_master_write(cmd, bytes_ptr, bytes.len(), ACK_CHECK_DIS).as_result()?;
 
     // stop
     i2c_master_stop(cmd).as_result()?;
