@@ -20,7 +20,8 @@ const TAG: &str = "api::display";
 
 #[repr(C)]
 pub struct Config {
-    pub resolution: (u32, u32),
+    pub width: usize,
+    pub height: usize,
 }
 
 
@@ -32,10 +33,11 @@ pub struct Interface<D> {
 
 impl<D> Interface<D>
 where D: driver::Display {
-    pub fn new(resolution: (u32, u32)) -> Interface<D> {
+    pub fn new(width: usize, height: usize) -> Interface<D> {
         Interface {
             config: Config {
-                resolution: resolution,
+                width: width,
+                height: height,
             },
             driver: D::new(),
         }

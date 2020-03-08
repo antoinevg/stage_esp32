@@ -29,6 +29,7 @@ use esp_idf::bindings::{
 };
 use esp_idf::bindings as idf;
 
+use crate::blinky;
 use crate::i2c::{Pins};
 use crate::logger;
 
@@ -73,16 +74,88 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
 
 
 pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
-    log!(TAG, "detecting sh1106 oled display...");
+    // also see: https://github.com/Devilbinder/SH1106/blob/master/SH1106.cpp
+
+    // reset display
+    log!(TAG, "resetting display peripheral");
+    let delay = (0.001 * 168_000_000.) as u32;
+    let gpio_reset = idf::gpio_num_t::GPIO_NUM_12;
+    /*blinky::configure_pin_as_output(gpio_reset)?;
+    blinky::set_led(gpio_reset, true)?;
+    blinky::delay(delay);
+    blinky::set_led(gpio_reset, false)?;
+    blinky::delay(delay);
+    blinky::set_led(gpio_reset, true)?;
+    blinky::delay(delay);*/
 
     // check if display is reachable over i2s
-    let value = read(port, address, 0)?; //Register::CHIP_ID)?;
-    log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value);
-    /*if (value & 0xFF00) != 0xA000 {
+    //let address = 0x00;
+    //let value = read(port, address, 0x00); //Register::CHIP_ID)?;
+    //log!(TAG, "Result is {:?}", value);
+    /*log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value?);
+    if (value & 0xFF00) != 0xA000 {
         log!(TAG, "unknown codec chip ID: 0x{:x}", value);
         return Err(idf::ESP_ERR_INVALID_RESPONSE.into());
     }
     log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value);*/
+
+    log!(TAG, "configuring sh1106 oled display at address: 0x{:x}", address);
+    write(port, address, 0x00, 0xAE); // turn off oled panel
+    write(port, address, 0x00, 0x02); // -set low column address
+    write(port, address, 0x00, 0x10); // -set high column address
+    write(port, address, 0x00, 0x40); // set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
+    write(port, address, 0x00, 0x81); // set contrast control register
+    write(port, address, 0x00, 0xA0); // Set SEG/Column Mapping
+    write(port, address, 0x00, 0xC0); // Set COM/Row Scan Direction
+    write(port, address, 0x00, 0xA6); // set normal display
+    write(port, address, 0x00, 0xA8); // set multiplex ratio(1 to 64)
+    write(port, address, 0x00, 0x3F); // 1/64 duty
+    write(port, address, 0x00, 0xD3); // -set display offset    Shift Mapping RAM Counter (0x00~0x3F)
+    write(port, address, 0x00, 0x00); // -not offset
+    write(port, address, 0x00, 0xd5); // set display clock divide ratio/oscillator frequency
+    write(port, address, 0x00, 0x80); // set divide ratio, Set Clock as 100 Frames/Sec
+    write(port, address, 0x00, 0xD9); // set pre-charge period
+    write(port, address, 0x00, 0xF1); // Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+    write(port, address, 0x00, 0xDA); // set com pins hardware configuration
+    write(port, address, 0x00, 0x12);
+    write(port, address, 0x00, 0xDB); // set vcomh
+    write(port, address, 0x00, 0x40); // Set VCOM Deselect Level
+    write(port, address, 0x00, 0x20); // -Set Page Addressing Mode (0x00/0x01/0x02)
+    write(port, address, 0x00, 0x02); //
+    write(port, address, 0x00, 0xA4); //  Disable Entire Display On (0xa4/0xa5)
+    write(port, address, 0x00, 0xA6); //  Disable Inverse Display On (0xa6/a7)
+
+
+    // TODO time.sleep(0.1);
+    //blinky::delay(delay);
+    write(port, address, 0x00, 0xAF); // turn on oled panel
+
+    // test data
+    const width: usize = 128;
+    const height: usize = 64;
+    let mut frame_buffer: [u8; width * height] = [0; width * height];
+
+    for p in 0..(width * height) {
+        frame_buffer[p] = (width % 2 == 0) as u8;
+    }
+
+    let mask = (idf::esp_random() % 255) as usize;
+
+    for page in 0usize..8 {
+        let page_address = (0xb0 + page) as u8;
+        write(port, address, 0x00, page_address); // set page address
+        write(port, address, 0x00, 0x02); // set low column address
+        write(port, address, 0x00, 0x10); // set high column address
+        //blinky::delay(delay);
+        // write data
+        for x in 0..width {
+            let index = x + (width * page);
+            let byte = (index % mask) as u8; //frame_buffer[index];
+            write(port, address, 0x40, byte);
+            //log!(TAG, "{} -> {}", index, byte);
+        }
+    }
+
 
     Ok(())
 }
@@ -135,7 +208,32 @@ unsafe fn read(port: i2c_port_t, address: u8, register: Register) -> Result<u16,
 
 // - write --------------------------------------------------------------------
 
-unsafe fn write(port: i2c_port_t, address: u8, register: Register, value: u16) -> Result<(), EspError> {
+unsafe fn write(port: i2c_port_t, address: u8, register: Register, byte: u8) -> Result<(), EspError> {
+    let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
+
+    // start
+    i2c_master_start(cmd).as_result()?;
+
+    // set write bit for address
+    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
+
+    // write byte to register
+    let register: u8 = register as u8; //.into();
+    i2c_master_write_byte(cmd, register, ACK_CHECK_EN).as_result()?;
+    i2c_master_write_byte(cmd, byte, ACK_CHECK_EN).as_result()?;
+
+    // stop
+    i2c_master_stop(cmd).as_result()?;
+
+    // send
+    i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
+    i2c_cmd_link_delete(cmd);
+
+    Ok(())
+}
+
+
+unsafe fn write_u16(port: i2c_port_t, address: u8, register: Register, value: u16) -> Result<(), EspError> {
     let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
 
     // start

@@ -43,7 +43,7 @@ unsafe impl Display for Driver {
 
         // configure display over i2c
         log!(TAG, "configure display over i2c");
-        let display_i2c_address = 0x0a;
+        let display_i2c_address = 0x3c;
         unsafe { i2c::configure(i2c_port, display_i2c_address)?; }
 
 
