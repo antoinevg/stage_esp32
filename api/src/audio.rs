@@ -113,11 +113,11 @@ where D: driver::Codec {
         let mut bits: u32 = 0;
         unsafe { idf::xTaskNotifyWait(0, 0, &mut bits, portMAX_DELAY); }
 
-        // initialize codec
+        // initialize driver
         self.driver.init(&mut self.config)?;
 
-        // let audio thread know the codec is ready
-        log!(TAG, "codec initialization is complete");
+        // let audio thread know the driver is ready
+        log!(TAG, "driver initialization is complete");
         unsafe {
             idf::xTaskNotify(self.task_thread, CODEC_NOTIFY_BIT_CODEC_READY,
                              idf::eNotifyAction::eSetValueWithOverwrite);

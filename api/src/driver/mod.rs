@@ -1,6 +1,7 @@
 use esp_idf::{AsResult, EspError};
 
 use crate::audio;
+use crate::display;
 use crate::logger;
 
 
@@ -34,7 +35,7 @@ pub unsafe trait Codec {
 pub unsafe trait Display {
     fn new() -> Self;
 
-    fn init(&mut self/*, config: &Config*/) -> Result<(), EspError>;
+    fn init(&mut self, config: &display::Config) -> Result<(), EspError>;
 
-    fn write(&self/*, config: &Config, callback_buffer: &[f32]*/) -> Result<(), EspError>;
+    fn write(&self) -> Result<(), EspError>;
 }

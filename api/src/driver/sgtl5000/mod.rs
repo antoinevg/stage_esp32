@@ -78,7 +78,7 @@ unsafe impl Codec for Driver {
 
         // initialize i2c peripheral
         log!(TAG, "initialize i2c peripheral");
-        unsafe { i2c::init(i2c_port, self.i2c_pins, config)?; }
+        unsafe { i2c::init(i2c_port, self.i2c_pins)?; }
 
         // configure codec over i2c
         log!(TAG, "configure codec over i2c");
