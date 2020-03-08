@@ -142,7 +142,6 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
         write(port, address, 0x00, page_address);       // set page address
         write(port, address, 0x00, 0x02);               // set low column address
         write(port, address, 0x00, 0x10);               // set high column address
-        blinky::delay(delay);
         write_bytes(port, address, 0x40, &page_buffer); // write data for page
     }
 
