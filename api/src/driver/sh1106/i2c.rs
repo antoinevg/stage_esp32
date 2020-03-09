@@ -75,19 +75,18 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
 }
 
 
-pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
+pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Result<(), EspError> {
     // also see: https://github.com/Devilbinder/SH1106/blob/master/SH1106.cpp
 
     // reset display
     log!(TAG, "resetting display peripheral");
     let delay = (0.001 * 168_000_000.) as u32;
-    let gpio_reset = idf::gpio_num_t::GPIO_NUM_12;
-    blinky::configure_pin_as_output(gpio_reset)?;
-    blinky::set_led(gpio_reset, true)?;
+    blinky::configure_pin_as_output(reset)?;
+    blinky::set_led(reset, true)?;
     blinky::delay(delay * 10);
-    blinky::set_led(gpio_reset, false)?;
+    blinky::set_led(reset, false)?;
     blinky::delay(delay * 200);
-    blinky::set_led(gpio_reset, true)?;
+    blinky::set_led(reset, true)?;
     blinky::delay(delay * 10);
 
     // TODO check if display is reachable over i2s

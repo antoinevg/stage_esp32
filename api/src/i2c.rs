@@ -15,8 +15,8 @@ pub struct Pins {
 impl Pins {
     pub fn new() -> Pins {
         Pins {
-            scl:  gpio_num_t::GPIO_NUM_23,
-            sda:  gpio_num_t::GPIO_NUM_18,
+            scl:  gpio_num_t::GPIO_NUM_22,
+            sda:  gpio_num_t::GPIO_NUM_21,
         }
     }
 }
