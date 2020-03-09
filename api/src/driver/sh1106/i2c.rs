@@ -98,49 +98,51 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value);*/
 
     log!(TAG, "configuring sh1106 oled display at address: 0x{:x}", address);
-    write(port, address, 0x00, 0xAE); // turn off oled panel
-    write(port, address, 0x00, 0x02); // -set low column address
-    write(port, address, 0x00, 0x10); // -set high column address
-    write(port, address, 0x00, 0x40); // set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
-    write(port, address, 0x00, 0x81); // set contrast control register
-    write(port, address, 0x00, 0xA0); // Set SEG/Column Mapping
-    write(port, address, 0x00, 0xC0); // Set COM/Row Scan Direction
-    write(port, address, 0x00, 0xA6); // set normal display
-    write(port, address, 0x00, 0xA8); // set multiplex ratio(1 to 64)
-    write(port, address, 0x00, 0x3F); // 1/64 duty
-    write(port, address, 0x00, 0xD3); // -set display offset    Shift Mapping RAM Counter (0x00~0x3F)
-    write(port, address, 0x00, 0x00); // -not offset
-    write(port, address, 0x00, 0xd5); // set display clock divide ratio/oscillator frequency
-    write(port, address, 0x00, 0x80); // set divide ratio, Set Clock as 100 Frames/Sec
-    write(port, address, 0x00, 0xD9); // set pre-charge period
-    write(port, address, 0x00, 0xF1); // Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
-    write(port, address, 0x00, 0xDA); // set com pins hardware configuration
-    write(port, address, 0x00, 0x12);
-    write(port, address, 0x00, 0xDB); // set vcomh
-    write(port, address, 0x00, 0x40); // Set VCOM Deselect Level
-    write(port, address, 0x00, 0x20); // -Set Page Addressing Mode (0x00/0x01/0x02)
-    write(port, address, 0x00, 0x02); //
-    write(port, address, 0x00, 0xA4); //  Disable Entire Display On (0xa4/0xa5)
-    write(port, address, 0x00, 0xA6); //  Disable Inverse Display On (0xa6/a7)
+    write(port, address, 0x00, 0xAE)?; // turn off oled panel
+    write(port, address, 0x00, 0x02)?; // -set low column address
+    write(port, address, 0x00, 0x10)?; // -set high column address
+    write(port, address, 0x00, 0x40)?; // set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
+    write(port, address, 0x00, 0x81)?; // set contrast control register
+    write(port, address, 0x00, 0xA0)?; // Set SEG/Column Mapping
+    write(port, address, 0x00, 0xC0)?; // Set COM/Row Scan Direction
+    write(port, address, 0x00, 0xA6)?; // set normal display
+    write(port, address, 0x00, 0xA8)?; // set multiplex ratio(1 to 64)
+    write(port, address, 0x00, 0x3F)?; // 1/64 duty
+    write(port, address, 0x00, 0xD3)?; // -set display offset    Shift Mapping RAM Counter (0x00~0x3F)
+    write(port, address, 0x00, 0x00)?; // -not offset
+    write(port, address, 0x00, 0xd5)?; // set display clock divide ratio/oscillator frequency
+    write(port, address, 0x00, 0x80)?; // set divide ratio, Set Clock as 100 Frames/Sec
+    write(port, address, 0x00, 0xD9)?; // set pre-charge period
+    write(port, address, 0x00, 0xF1)?; // Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+    write(port, address, 0x00, 0xDA)?; // set com pins hardware configuration
+    write(port, address, 0x00, 0x12)?;
+    write(port, address, 0x00, 0xDB)?; // set vcomh
+    write(port, address, 0x00, 0x40)?; // Set VCOM Deselect Level
+    write(port, address, 0x00, 0x20)?; // -Set Page Addressing Mode (0x00/0x01/0x02)
+    write(port, address, 0x00, 0x02)?; //
+    write(port, address, 0x00, 0xA4)?; //  Disable Entire Display On (0xa4/0xa5)
+    write(port, address, 0x00, 0xA6)?; //  Disable Inverse Display On (0xa6/a7)
 
     blinky::delay(delay);
-    write(port, address, 0x00, 0xAF); // turn on oled panel
+    write(port, address, 0x00, 0xAF)?; // turn on oled panel
+
+    // allocate a page_buffer
+    #[allow(non_upper_case_globals)] const width: usize = 128;
+    #[allow(non_upper_case_globals)] const height: usize = 64;
+    let mut page_buffer: [u8; width] = [0x00; width];
 
     // blank display
-    let mut page_buffer: [u8; width] = [0x00; width];
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
-        write(port, address, 0x00, page_address);       // set page address
-        write(port, address, 0x00, 0x02);               // set low column address
-        write(port, address, 0x00, 0x10);               // set high column address
-        write_bytes(port, address, 0x40, &page_buffer); // write data for page
+        write(port, address, 0x00, page_address)?;       // set page address
+        write(port, address, 0x00, 0x02)?;               // set low column address
+        write(port, address, 0x00, 0x10)?;               // set high column address
+        write_bytes(port, address, 0x40, &page_buffer)?; // write data for page
     }
 
     blinky::delay(delay);
 
     // generate data for a test pattern
-    const width: usize = 128;
-    const height: usize = 64;
     for x in 0..width {
         let byte = if x % 8 == 0 { 255 } else { 1 };
         page_buffer[x] = byte;
@@ -149,10 +151,10 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     // blit test pattern to the display
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
-        write(port, address, 0x00, page_address);       // set page address
-        write(port, address, 0x00, 0x02);               // set low column address
-        write(port, address, 0x00, 0x10);               // set high column address
-        write_bytes(port, address, 0x40, &page_buffer); // write data for page
+        write(port, address, 0x00, page_address)?;       // set page address
+        write(port, address, 0x00, 0x02)?;               // set low column address
+        write(port, address, 0x00, 0x10)?;               // set high column address
+        write_bytes(port, address, 0x40, &page_buffer)?; // write data for page
     }
 
     Ok(())
