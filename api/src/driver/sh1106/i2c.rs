@@ -51,8 +51,10 @@ const NACK_VAL: bool      = true;  // I2C nack value
 
 pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
     log!(TAG, "configure pins for display peripheral i2c: {:?}", pins);
-    /* TODO is there a way to check if the i2c interface is already configured or should we be
-            passing them in independently?
+
+    // TODO i2c init should be happening in api/i2c
+
+    /*
     let i2c_config = i2c_config_t {
         mode:  i2c_mode_t::I2C_MODE_MASTER,
         scl_io_num:  pins.scl,
@@ -70,7 +72,7 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
                        0, // rx buffer length (slave only)
                        0, // tx buffer length (slave only)
                        0).as_result()?; //ESP_INTR_FLAG_LEVEL1 as i32).as_result()?;
-    */
+     */
     Ok(())
 }
 
@@ -99,8 +101,8 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
 
     log!(TAG, "configuring sh1106 oled display at address: 0x{:x}", address);
     write(port, address, 0x00, 0xAE)?; // turn off oled panel
-    write(port, address, 0x00, 0x02)?; // -set low column address
-    write(port, address, 0x00, 0x10)?; // -set high column address
+    write(port, address, 0x00, 0x02)?; // set low column address
+    write(port, address, 0x00, 0x10)?; // set high column address
     write(port, address, 0x00, 0x40)?; // set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
     write(port, address, 0x00, 0x81)?; // set contrast control register
     write(port, address, 0x00, 0xA0)?; // Set SEG/Column Mapping
@@ -108,8 +110,8 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     write(port, address, 0x00, 0xA6)?; // set normal display
     write(port, address, 0x00, 0xA8)?; // set multiplex ratio(1 to 64)
     write(port, address, 0x00, 0x3F)?; // 1/64 duty
-    write(port, address, 0x00, 0xD3)?; // -set display offset    Shift Mapping RAM Counter (0x00~0x3F)
-    write(port, address, 0x00, 0x00)?; // -not offset
+    write(port, address, 0x00, 0xD3)?; // set display offset    Shift Mapping RAM Counter (0x00~0x3F)
+    write(port, address, 0x00, 0x00)?; // not offset
     write(port, address, 0x00, 0xd5)?; // set display clock divide ratio/oscillator frequency
     write(port, address, 0x00, 0x80)?; // set divide ratio, Set Clock as 100 Frames/Sec
     write(port, address, 0x00, 0xD9)?; // set pre-charge period
@@ -118,10 +120,10 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     write(port, address, 0x00, 0x12)?;
     write(port, address, 0x00, 0xDB)?; // set vcomh
     write(port, address, 0x00, 0x40)?; // Set VCOM Deselect Level
-    write(port, address, 0x00, 0x20)?; // -Set Page Addressing Mode (0x00/0x01/0x02)
+    write(port, address, 0x00, 0x20)?; // Set Page Addressing Mode (0x00/0x01/0x02)
     write(port, address, 0x00, 0x02)?; //
-    write(port, address, 0x00, 0xA4)?; //  Disable Entire Display On (0xa4/0xa5)
-    write(port, address, 0x00, 0xA6)?; //  Disable Inverse Display On (0xa6/a7)
+    write(port, address, 0x00, 0xA4)?; // Disable Entire Display On (0xa4/0xa5)
+    write(port, address, 0x00, 0xA6)?; // Disable Inverse Display On (0xa6/a7)
 
     blinky::delay(delay);
     write(port, address, 0x00, 0xAF)?; // turn on oled panel
@@ -132,6 +134,7 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     let mut page_buffer: [u8; width] = [0x00; width];
 
     // blank display
+    log!(TAG, "clearing display");
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
         write(port, address, 0x00, page_address)?;       // set page address
@@ -149,6 +152,7 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     }
 
     // blit test pattern to the display
+    log!(TAG, "display test pattern");
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
         write(port, address, 0x00, page_address)?;       // set page address
@@ -156,6 +160,8 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
         write(port, address, 0x00, 0x10)?;               // set high column address
         write_bytes(port, address, 0x40, &page_buffer)?; // write data for page
     }
+
+
 
     Ok(())
 }
