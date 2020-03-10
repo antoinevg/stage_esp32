@@ -88,11 +88,19 @@ pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
     }
     log!(TAG, "set register defaults");
 
-    // chip powerup and supply configurations
+    // chip power up internal vdd
+    //write(port, address, Register::CHIP_LINREG_CTRL, 0x0008)?;
+    //log!(TAG, "configured VDD level to 1.2V");
+    //write(port, address, Register::CHIP_ANA_POWER, 0x7260)?;
+    //log!(TAG, "powered up internal linear regulator");
+
+    // chip powerup external vdd
     write(port, address, Register::CHIP_ANA_POWER, 0x4260)?;
     log!(TAG, "turned off startup power supplies to save power");
-    write(port, address, Register::CHIP_LINREG_CTRL, 0x006c)?;
+    write(port, address, Register::CHIP_LINREG_CTRL, 0x006c)?; // TODO check whether we really need this
     log!(TAG, "configured the charge pump to use the VDDIO rail");
+
+    // chip supply configurations
     write(port, address, Register::CHIP_REF_CTRL, 0x01f2)?;
     log!(TAG, "VAG=1.575, normal ramp, +12.5%% bias current");
     write(port, address, Register::CHIP_LINE_OUT_CTRL, 0x0322)?;
