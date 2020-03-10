@@ -33,6 +33,14 @@ use crate::blinky;
 use crate::i2c::{Pins};
 use crate::logger;
 
+use embedded_graphics::{
+    fonts::Font6x8,
+    icoord,
+    prelude::*,
+    primitives::{Circle, Line},
+};
+
+
 
 // - global constants ---------------------------------------------------------
 
@@ -53,8 +61,7 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
     log!(TAG, "configure pins for display peripheral i2c: {:?}", pins);
 
     // TODO i2c init should be happening in api/i2c
-
-    /*
+/*
     let i2c_config = i2c_config_t {
         mode:  i2c_mode_t::I2C_MODE_MASTER,
         scl_io_num:  pins.scl,
@@ -72,7 +79,9 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
                        0, // rx buffer length (slave only)
                        0, // tx buffer length (slave only)
                        0).as_result()?; //ESP_INTR_FLAG_LEVEL1 as i32).as_result()?;
-     */
+    blinky::delay(168_000_000);
+*/
+
     Ok(())
 }
 
@@ -161,6 +170,20 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
         write_bytes(port, address, 0x40, &page_buffer)?; // write data for page
     }
 
+    // test graphics library
+    let mut display = crate::display::Display::new();
+    let circle = Circle::new(icoord!(16, 16), 16).stroke(Some(1u8.into()));
+    let text = Font6x8::render_str("Hello Rust!").fill(Some(20u8.into())).translate(Coord::new(20, 16));
+    display.draw(circle);
+    display.draw(text);
+
+    for page in 0usize..8 {
+        let page_address = (0xb0 + page) as u8;
+        write(port, address, 0x00, page_address)?;       // set page address
+        write(port, address, 0x00, 0x02)?;               // set low column address
+        write(port, address, 0x00, 0x10)?;               // set high column address
+        write_bytes(port, address, 0x40, &display.page_buffer[page])?; // write data for page
+    }
 
 
     Ok(())
