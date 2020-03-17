@@ -20,7 +20,7 @@ const TAG: &str = "api::driver::sh1106";
 
 pub struct Driver {
     pub i2c_pins: crate::i2c::Pins,
-    pub reset_pin: idf::gpio_num_t,
+    //pub reset_pin: idf::gpio_num_t,
 }
 
 
@@ -28,7 +28,7 @@ unsafe impl Display for Driver {
     fn new() -> Driver {
         Driver {
             i2c_pins: crate::i2c::Pins::new(),
-            reset_pin: idf::gpio_num_t::GPIO_NUM_23,
+            //reset_pin: idf::gpio_num_t::GPIO_NUM_23,
         }
     }
 
@@ -46,7 +46,7 @@ unsafe impl Display for Driver {
         // configure display over i2c
         log!(TAG, "configure display over i2c");
         let display_i2c_address = 0x3c;
-        unsafe { i2c::configure(self.reset_pin, i2c_port, display_i2c_address)?; }
+        //unsafe { i2c::configure(self.reset_pin, i2c_port, display_i2c_address)?; }
 
 
         Ok(())
