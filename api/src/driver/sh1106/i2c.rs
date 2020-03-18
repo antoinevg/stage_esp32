@@ -58,7 +58,7 @@ const NACK_VAL: bool      = true;  // I2C nack value
 // - initialization -----------------------------------------------------------
 
 pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
-    log!(TAG, "configure pins for display peripheral i2c: {:?}", pins);
+    log!(TAG, "configure pins for i2c display peripheral: {:?}", pins);
 
     // TODO i2c init should be happening in api/i2c
 /*
@@ -92,13 +92,13 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     // reset display
     log!(TAG, "resetting display peripheral");
     let delay = (0.001 * 168_000_000.) as u32;
-    blinky::configure_pin_as_output(reset)?;
+    /*blinky::configure_pin_as_output(reset)?;
     blinky::set_led(reset, true)?;
     blinky::delay(delay * 10);
     blinky::set_led(reset, false)?;
     blinky::delay(delay * 200);
     blinky::set_led(reset, true)?;
-    blinky::delay(delay * 10);
+    blinky::delay(delay * 10);*/
 
     // TODO check if display is reachable over i2s
     /*let value = read(port, address, 0x00); //Register::CHIP_ID)?;
