@@ -152,8 +152,6 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
         write_bytes(port, address, 0x40, &page_buffer)?; // write data for page
     }
 
-    blinky::delay(delay);
-
     // generate data for a test pattern
     for x in 0..width {
         let byte = if x % 8 == 0 { 255 } else { 1 };

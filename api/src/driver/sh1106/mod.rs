@@ -54,8 +54,8 @@ unsafe impl Display for Driver {
 
         // - spi ------------------------------
         log!(TAG, "initialize i2c display peripheral");
-        unsafe { spi::init(spi_port, self.spi_pins)?; }
-        unsafe { spi::configure(self.reset_pin, spi_port, display_address)?; }
+        let handle = unsafe { spi::init(spi_port, self.spi_pins)? };
+        unsafe { spi::configure(self.spi_pins.dc, handle)?; }
 
         Ok(())
     }

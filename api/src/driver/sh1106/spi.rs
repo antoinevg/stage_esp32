@@ -1,10 +1,33 @@
+use core::convert::TryFrom;
+use num_enum::{IntoPrimitive, TryFromPrimitive};
+
+use cty::{uint8_t, c_void};
+
 use esp_idf::{AsResult, EspError, portMAX_DELAY, portTICK_RATE_MS};
 use esp_idf::bindings::{
+    gpio_config_t,
+    gpio_int_type_t,
+    gpio_mode_t,
     gpio_num_t,
+    gpio_pulldown_t,
+    gpio_pullup_t,
+    spi_bus_config_t,
+    spi_device_interface_config_t,
+    spi_device_handle_t,
+    spi_device_t,
     spi_host_device_t,
+    spi_transaction_t,
+};
+use esp_idf::bindings::{
+    gpio_config,
+    gpio_set_level,
+    spi_bus_initialize,
+    spi_bus_add_device,
+    spi_device_polling_transmit,
 };
 use esp_idf::bindings as idf;
 
+use crate::blinky;
 use crate::logger;
 
 
@@ -34,26 +57,227 @@ impl Pins {
     }
 }
 
+#[derive(IntoPrimitive, TryFromPrimitive)]
+#[repr(u8)]
+pub enum Mode {
+    Data    = 0, // TODO check
+    Command = 1
+}
+
 
 // - initialization -----------------------------------------------------------
 
-pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(), EspError> {
+pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_handle_t), EspError> {
+    // also see: https://github.com/kcl93/adafruit_esp-idf_sh1106/blob/master/Adafruit_SH1106.cpp
+
     log!(TAG, "configure spi pins for display peripheral: {:?}", pins);
 
+    // configure pins as outputs: csel, d/c
     let config = gpio_config_t {
-        pin_bit_mask: (0x1 << (pins.cs as u32)) | (0x1 << (pins.miso as u32)),
+        pin_bit_mask: (0x1 << (pins.csel as u32)) | (0x1 << (pins.dc as u32)),
         mode: gpio_mode_t::GPIO_MODE_OUTPUT,
-        pull_up_en: gpio_pullup_t::GPIO_PULLUP_DISABLE,
         pull_down_en: gpio_pulldown_t::GPIO_PULLDOWN_DISABLE,
+        pull_up_en: gpio_pullup_t::GPIO_PULLUP_DISABLE,
         intr_type: gpio_int_type_t::GPIO_INTR_DISABLE,
     };
+    gpio_config(&config).as_result()?;
+
+    // initialize spi bus
+    let config = spi_bus_config_t {
+        sclk_io_num: pins.sclk as i32,
+        mosi_io_num: pins.mosi as i32,
+        miso_io_num: gpio_num_t::GPIO_NUM_NC as i32,
+        quadwp_io_num: gpio_num_t::GPIO_NUM_NC as i32,
+        quadhd_io_num: gpio_num_t::GPIO_NUM_NC as i32,
+        max_transfer_sz: 128,
+        flags: 0,
+        intr_flags: 0,
+    };
+    let dma_channel = 1;
+    spi_bus_initialize(port, &config, dma_channel);
+
+    // add display to the spi bus
+    let config = spi_device_interface_config_t {
+        clock_speed_hz: 4_000_000,           // 4MHz
+        mode: 0,                             // SPI mode 0
+        spics_io_num: pins.csel as i32,
+        queue_size: 2,                       // queue 2 transactions
+        pre_cb: Some(pre_transfer_callback), // callback to handle d/c line
+        ..spi_device_interface_config_t::default()
+    };
+    //let mut handle = spi_device_t { _unused: [0; 0] };
+    // TODO spi_device_handle_t = *mut spi_device_t;
+    //spi_bus_add_device(port, &config, &mut ((&mut handle) as idf::spi_device_handle_t));
+    let mut handle = core::ptr::null_mut();
+    spi_bus_add_device(port, &config, &mut handle);
+
+    // pre-transfer callback
+    extern "C" fn pre_transfer_callback(transaction: *mut idf::spi_transaction_t) -> ()  {
+        //gpio_set_level((gpio_num_t)((uint8_t*)&t->user)[0], (uint32_t)((uint8_t*)&t->user)[1]);
+
+        // TODO super shitty, give it a struct please
+        //(gpio_num_t) ((uint8_t*)&t->user)[0],
+        //(uint32_t)   ((uint8_t*)&t->user)[1]
+        let transaction: spi_transaction_t = unsafe { *transaction };
+        let user: *mut core::ffi::c_void = transaction.user;
+        let user: *const uint8_t = user as *const uint8_t;
+        let user: &[u8] = unsafe { core::slice::from_raw_parts(user, 2) };
+        let gpio_dc: gpio_num_t = unsafe { core::mem::transmute::<i32, gpio_num_t>(user[0] as i32) };
+        let mode: Mode = Mode::try_from(user[1]).unwrap();
+        let mode: u8 = mode.into();
+        unsafe { gpio_set_level(gpio_dc, mode as u32) };
+    }
+
+    Ok(handle)
+}
+
+
+pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Result<(), EspError> {
+    let delay = (0.001 * 168_000_000.) as u32;
+
+    log!(TAG, "configuring sh1106 oled display"); // TODO at address: 0x{:x}", address);
+
+    let command = |bytes: &[u8]| -> Result<(), EspError> {
+        transmit(gpio_dc, handle, bytes, Mode::Command)
+    };
+
+    let vcc = Register::EXTERNALVCC;
+    //let vcc = Register::SWITCHCAPVCC;
+
+    command(&[Register::DISPLAYOFF.into()])?;           // 0xAE
+    command(&[Register::SETDISPLAYCLOCKDIV.into()])?;   // 0xD5
+    command(&[0x80])?;                            // the suggested ratio 0x80
+    command(&[Register::SETMULTIPLEX.into()])?;         // 0xA8
+    command(&[0x3F])?;
+    command(&[Register::SETDISPLAYOFFSET.into()])?;     // 0xD3
+    command(&[0x00])?;                        // no offset
+
+    command(&[Register::SETSTARTLINE as u8 | 0x00])?;  // line #0 0x40
+    command(&[Register::CHARGEPUMP.into()])?;           // 0x8D
+    match vcc {
+        Register::EXTERNALVCC  => command(&[0x10]),
+        Register::SWITCHCAPVCC => command(&[0x14]),
+        _ => Ok(())
+    }?;
+    command(&[Register::MEMORYMODE.into()])?;           // 0x20
+    command(&[0x00])?;                        // 0x0 act like ks0108
+    command(&[Register::SEGREMAP as u8 | 0x01])?;
+    command(&[Register::COMSCANDEC.into()])?;
+    command(&[Register::SETCOMPINS.into()])?;           // 0xDA
+    command(&[0x12])?;
+    command(&[Register::SETCONTRAST.into()])?;          // 0x81
+    match vcc {
+        Register::EXTERNALVCC  => command(&[0x9f]),
+        Register::SWITCHCAPVCC => command(&[0xcf]),
+        _ => Ok(())
+    }?;
+    command(&[Register::SETPRECHARGE.into()])?;         // 0xd9
+    match vcc {
+        Register::EXTERNALVCC  => command(&[0x22]),
+        Register::SWITCHCAPVCC => command(&[0xf1]),
+        _ => Ok(())
+    }?;
+    command(&[Register::SETVCOMDETECT.into()])?;        // 0xDB
+    command(&[0x40])?;
+    command(&[Register::DISPLAYALLON_RESUME.into()])?;  // 0xA4
+    command(&[Register::NORMALDISPLAY.into()])?;        // 0xA6
+
+    blinky::delay(delay);
+
+    // allocate a page_buffer
+    #[allow(non_upper_case_globals)] const width: usize = 128;
+    #[allow(non_upper_case_globals)] const height: usize = 64;
+    let mut page_buffer: [u8; width] = [0x00; width];
+
+    // TODO blank display
+
+    // generate data for a test pattern
+    for x in 0..width {
+        let byte = if x % 8 == 0 { 255 } else { 1 };
+        page_buffer[x] = byte;
+    }
+
+    // blit test pattern to the display
+    log!(TAG, "display test pattern");
+    command(&[Register::SETLOWCOLUMN  as u8 | 0x00])?;
+    command(&[Register::SETHIGHCOLUMN as u8 | 0x00])?;
+    command(&[Register::SETSTARTLINE  as u8 | 0x00])?;
+    for page in 0usize..8 {
+        let page_address = (0xb0 + page) as u8;
+        command(&[Register::SETPAGEADDRESS as u8 | page_address])?; // set page address
+        command(&[Register::SETLOWCOLUMN   as u8 | 0x02])?;         // set lower column address
+        command(&[Register::SETHIGHCOLUMN  as u8 | 0x00])?;         // set higher column address
+        transmit(gpio_dc, handle, &page_buffer, Mode::Data)?;       // write data for page
+    }
 
     Ok(())
 }
 
 
-pub unsafe fn configure(reset: gpio_num_t, port: spi_host_device_t, address: u8) -> Result<(), EspError> {
-    log!(TAG, "configuring sh1106 oled display at address: 0x{:x}", address);
+pub unsafe fn transmit(gpio_dc: gpio_num_t, handle: spi_device_handle_t, bytes: &[u8], mode: Mode) -> Result<(), EspError> {
+    let mut transaction = spi_transaction_t {
+        length: bytes.len() * 8, // spi transaction length is measure in bits
+        __bindgen_anon_1: idf::spi_transaction_t__bindgen_ty_1 {
+            tx_buffer: bytes.as_ptr() as *const c_void,
+        },
+        ..spi_transaction_t::default()
+    };
+
+    // TODO super shitty, give it a struct please
+    let user: *mut core::ffi::c_void = transaction.user;
+    let user: *mut uint8_t = user as *mut uint8_t;
+    let user: &mut [u8] = core::slice::from_raw_parts_mut(user, 2);
+    user[0] = gpio_dc as u8;
+    user[1] = mode.into();
+
+    spi_device_polling_transmit(handle, &mut transaction).as_result()?;
 
     Ok(())
+}
+
+
+// - codec register addresses -------------------------------------------------
+
+#[allow(non_camel_case_types)]
+#[derive(IntoPrimitive)]
+#[repr(u8)]
+enum Register {
+    SETCONTRAST          = 0x81,
+    DISPLAYALLON_RESUME  = 0xA4,
+    DISPLAYALLON         = 0xA5,
+    NORMALDISPLAY        = 0xA6,
+    INVERTDISPLAY        = 0xA7,
+    DISPLAYOFF           = 0xAE,
+    DISPLAYON            = 0xAF,
+
+    SETDISPLAYOFFSET     = 0xD3,
+    SETCOMPINS           = 0xDA,
+
+    SETVCOMDETECT        = 0xDB,
+
+    SETDISPLAYCLOCKDIV   = 0xD5,
+    SETPRECHARGE         = 0xD9,
+
+    SETMULTIPLEX         = 0xA8,
+
+    SETLOWCOLUMN         = 0x00,
+    SETHIGHCOLUMN        = 0x10,
+
+    SETSTARTLINE         = 0x40,
+
+    SETPAGEADDRESS       = 0xB0,
+
+    MEMORYMODE           = 0x20,
+    COLUMNADDR           = 0x21,
+    PAGEADDR             = 0x22,
+
+    COMSCANINC           = 0xC0,
+    COMSCANDEC           = 0xC8,
+
+    SEGREMAP             = 0xA0,
+
+    CHARGEPUMP           = 0x8D,
+
+    EXTERNALVCC          = 0x1,
+    SWITCHCAPVCC         = 0x2,
 }
