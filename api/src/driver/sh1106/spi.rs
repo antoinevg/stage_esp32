@@ -33,7 +33,7 @@ use crate::logger;
 
 // - global constants ---------------------------------------------------------
 
-const TAG: &str = "api::driver::sh1106::i2c";
+const TAG: &str = "api::driver::sh1106::spi";
 
 
 // - types --------------------------------------------------------------------
@@ -57,17 +57,17 @@ impl Pins {
     }
 }
 
-#[derive(IntoPrimitive, TryFromPrimitive)]
+#[derive(Debug, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
 pub enum Mode {
-    Data    = 0, // TODO check
-    Command = 1
+    Command = 0,
+    Data    = 1
 }
 
 
 // - initialization -----------------------------------------------------------
 
-pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_handle_t), EspError> {
+pub unsafe fn init(device: spi_host_device_t, pins: Pins) -> Result<(spi_device_handle_t), EspError> {
     // also see: https://github.com/kcl93/adafruit_esp-idf_sh1106/blob/master/Adafruit_SH1106.cpp
 
     log!(TAG, "configure spi pins for display peripheral: {:?}", pins);
@@ -75,6 +75,8 @@ pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_ha
     // configure pins as outputs: csel, d/c
     let config = gpio_config_t {
         pin_bit_mask: (0x1 << (pins.csel as u32)) | (0x1 << (pins.dc as u32)),
+            //| (0x1 << (pins.sclk as u32))
+            //| (0x1 << (pins.mosi as u32)),
         mode: gpio_mode_t::GPIO_MODE_OUTPUT,
         pull_down_en: gpio_pulldown_t::GPIO_PULLDOWN_DISABLE,
         pull_up_en: gpio_pullup_t::GPIO_PULLUP_DISABLE,
@@ -83,6 +85,7 @@ pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_ha
     gpio_config(&config).as_result()?;
 
     // initialize spi bus
+    log!(TAG, "initialize spi host device: {:?}", device);
     let config = spi_bus_config_t {
         sclk_io_num: pins.sclk as i32,
         mosi_io_num: pins.mosi as i32,
@@ -94,9 +97,10 @@ pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_ha
         intr_flags: 0,
     };
     let dma_channel = 1;
-    spi_bus_initialize(port, &config, dma_channel);
+    spi_bus_initialize(device, &config, dma_channel);
 
     // add display to the spi bus
+    log!(TAG, "add display to spi bus");
     let config = spi_device_interface_config_t {
         clock_speed_hz: 4_000_000,           // 4MHz
         mode: 0,                             // SPI mode 0
@@ -107,26 +111,40 @@ pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_ha
     };
     //let mut handle = spi_device_t { _unused: [0; 0] };
     // TODO spi_device_handle_t = *mut spi_device_t;
-    //spi_bus_add_device(port, &config, &mut ((&mut handle) as idf::spi_device_handle_t));
+    //spi_bus_add_device(device, &config, &mut ((&mut handle) as idf::spi_device_handle_t));
     let mut handle = core::ptr::null_mut();
-    spi_bus_add_device(port, &config, &mut handle);
+    spi_bus_add_device(device, &config, &mut handle);
 
     // pre-transfer callback
     extern "C" fn pre_transfer_callback(transaction: *mut idf::spi_transaction_t) -> ()  {
-        //gpio_set_level((gpio_num_t)((uint8_t*)&t->user)[0], (uint32_t)((uint8_t*)&t->user)[1]);
+        const TAG: &str = "api::driver::sh1106::spi::pre_transfer_callback";
 
         // TODO super shitty, give it a struct please
-        //(gpio_num_t) ((uint8_t*)&t->user)[0],
-        //(uint32_t)   ((uint8_t*)&t->user)[1]
         let transaction: spi_transaction_t = unsafe { *transaction };
         let user: *mut core::ffi::c_void = transaction.user;
         let user: *const uint8_t = user as *const uint8_t;
         let user: &[u8] = unsafe { core::slice::from_raw_parts(user, 2) };
         let gpio_dc: gpio_num_t = unsafe { core::mem::transmute::<i32, gpio_num_t>(user[0] as i32) };
         let mode: Mode = Mode::try_from(user[1]).unwrap();
+        //log!(TAG, "gpio_dc: {:?}  mode: {:?} ({})", gpio_dc, mode, user[1]);
+
         let mode: u8 = mode.into();
         unsafe { gpio_set_level(gpio_dc, mode as u32) };
     }
+
+    // TODO check handle for null pointer
+
+    // reset
+    log!(TAG, "resetting display peripheral");
+    let reset = gpio_num_t::GPIO_NUM_27;
+    let delay = (0.001 * 168_000_000.) as u32;
+    blinky::configure_pin_as_output(reset)?;
+    blinky::set_led(reset, true)?;
+    blinky::delay(delay * 10);
+    blinky::set_led(reset, false)?;
+    blinky::delay(delay * 200);
+    blinky::set_led(reset, true)?;
+    blinky::delay(delay * 10);
 
     Ok(handle)
 }
@@ -135,22 +153,23 @@ pub unsafe fn init(port: spi_host_device_t, pins: Pins) -> Result<(spi_device_ha
 pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Result<(), EspError> {
     let delay = (0.001 * 168_000_000.) as u32;
 
-    log!(TAG, "configuring sh1106 oled display"); // TODO at address: 0x{:x}", address);
+    log!(TAG, "configuring sh1106 oled display with dc:{:?} handle:{:?}", gpio_dc, handle);
 
     let command = |bytes: &[u8]| -> Result<(), EspError> {
+        //log!(TAG, "Sending command: 0x{:x}", bytes[0]);
         transmit(gpio_dc, handle, bytes, Mode::Command)
     };
 
-    let vcc = Register::EXTERNALVCC;
-    //let vcc = Register::SWITCHCAPVCC;
+    //let vcc = Register::EXTERNALVCC;
+    let vcc = Register::SWITCHCAPVCC;
 
     command(&[Register::DISPLAYOFF.into()])?;           // 0xAE
     command(&[Register::SETDISPLAYCLOCKDIV.into()])?;   // 0xD5
-    command(&[0x80])?;                            // the suggested ratio 0x80
+    command(&[0x80])?;                              // the suggested ratio 0x80
     command(&[Register::SETMULTIPLEX.into()])?;         // 0xA8
-    command(&[0x3F])?;
+    command(&[0x3F])?;                              // ???
     command(&[Register::SETDISPLAYOFFSET.into()])?;     // 0xD3
-    command(&[0x00])?;                        // no offset
+    command(&[0x00])?;                              // no offset
 
     command(&[Register::SETSTARTLINE as u8 | 0x00])?;  // line #0 0x40
     command(&[Register::CHARGEPUMP.into()])?;           // 0x8D
@@ -182,9 +201,12 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
     command(&[Register::DISPLAYALLON_RESUME.into()])?;  // 0xA4
     command(&[Register::NORMALDISPLAY.into()])?;        // 0xA6
 
+    command(&[Register::DISPLAYON.into()])?;
+
     blinky::delay(delay);
 
     // allocate a page_buffer
+    log!(TAG, "allocating memory for page buffer");
     #[allow(non_upper_case_globals)] const width: usize = 128;
     #[allow(non_upper_case_globals)] const height: usize = 64;
     let mut page_buffer: [u8; width] = [0x00; width];
@@ -192,6 +214,7 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
     // TODO blank display
 
     // generate data for a test pattern
+    log!(TAG, "generate test pattern data");
     for x in 0..width {
         let byte = if x % 8 == 0 { 255 } else { 1 };
         page_buffer[x] = byte;
@@ -215,6 +238,7 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
 
 
 pub unsafe fn transmit(gpio_dc: gpio_num_t, handle: spi_device_handle_t, bytes: &[u8], mode: Mode) -> Result<(), EspError> {
+    //log!(TAG, "transmit dc:{:?} handle:{:?} bytes:{:x?} mode:{:?}", gpio_dc, handle, bytes, mode);
     let mut transaction = spi_transaction_t {
         length: bytes.len() * 8, // spi transaction length is measure in bits
         __bindgen_anon_1: idf::spi_transaction_t__bindgen_ty_1 {
@@ -224,11 +248,8 @@ pub unsafe fn transmit(gpio_dc: gpio_num_t, handle: spi_device_handle_t, bytes: 
     };
 
     // TODO super shitty, give it a struct please
-    let user: *mut core::ffi::c_void = transaction.user;
-    let user: *mut uint8_t = user as *mut uint8_t;
-    let user: &mut [u8] = core::slice::from_raw_parts_mut(user, 2);
-    user[0] = gpio_dc as u8;
-    user[1] = mode.into();
+    let mut user: [u8; 2] = [gpio_dc as u8, mode.into()];
+    transaction.user = user.as_mut_ptr() as *mut c_void;
 
     spi_device_polling_transmit(handle, &mut transaction).as_result()?;
 

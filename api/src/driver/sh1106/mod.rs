@@ -38,7 +38,7 @@ unsafe impl Display for Driver {
     fn init(&mut self, config: &Config) -> Result<(), EspError> {
         let display_address = 0x3c;
         let i2c_port = idf::i2c_port_t::I2C_NUM_0;
-        let spi_port = idf::spi_host_device_t::SPI3_HOST;
+        let spi_device = idf::spi_host_device_t::SPI3_HOST;
 
         log!(TAG, "initialize display subsystem");
 
@@ -53,8 +53,8 @@ unsafe impl Display for Driver {
         //unsafe { i2c::configure(self.reset_pin, i2c_port, display_address)?; }
 
         // - spi ------------------------------
-        log!(TAG, "initialize i2c display peripheral");
-        let handle = unsafe { spi::init(spi_port, self.spi_pins)? };
+        log!(TAG, "initialize spi display peripheral");
+        let handle = unsafe { spi::init(spi_device, self.spi_pins)? };
         unsafe { spi::configure(self.spi_pins.dc, handle)?; }
 
         Ok(())
