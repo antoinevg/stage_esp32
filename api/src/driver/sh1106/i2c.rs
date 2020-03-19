@@ -1,5 +1,3 @@
-use num_enum::IntoPrimitive;
-
 use esp_idf::{AsResult, EspError, portMAX_DELAY, portTICK_RATE_MS};
 use esp_idf::bindings::{
     gpio_num_t,
@@ -29,16 +27,18 @@ use esp_idf::bindings::{
 };
 use esp_idf::bindings as idf;
 
-use crate::blinky;
-use crate::i2c::{Pins};
-use crate::logger;
-
 use embedded_graphics::{
     fonts::Font6x8,
     icoord,
     prelude::*,
     primitives::{Circle, Line},
 };
+use num_enum::IntoPrimitive;
+
+use crate::blinky;
+use crate::i2c::{Pins};
+use crate::logger;
+
 
 
 
@@ -114,8 +114,8 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     write(port, address, 0x00, 0x10)?; // set high column address
     write(port, address, 0x00, 0x40)?; // set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
     write(port, address, 0x00, 0x81)?; // set contrast control register
-    write(port, address, 0x00, 0xA0)?; // Set SEG/Column Mapping
-    write(port, address, 0x00, 0xC0)?; // Set COM/Row Scan Direction
+    write(port, address, 0x00, 0xA0)?; // set SEG/Column Mapping
+    write(port, address, 0x00, 0xC0)?; // set COM/Row Scan Direction
     write(port, address, 0x00, 0xA6)?; // set normal display
     write(port, address, 0x00, 0xA8)?; // set multiplex ratio(1 to 64)
     write(port, address, 0x00, 0x3F)?; // 1/64 duty
@@ -124,15 +124,15 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     write(port, address, 0x00, 0xd5)?; // set display clock divide ratio/oscillator frequency
     write(port, address, 0x00, 0x80)?; // set divide ratio, Set Clock as 100 Frames/Sec
     write(port, address, 0x00, 0xD9)?; // set pre-charge period
-    write(port, address, 0x00, 0xF1)?; // Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+    write(port, address, 0x00, 0xF1)?; // set Pre-Charge as 15 Clocks & Discharge as 1 Clock
     write(port, address, 0x00, 0xDA)?; // set com pins hardware configuration
     write(port, address, 0x00, 0x12)?;
     write(port, address, 0x00, 0xDB)?; // set vcomh
-    write(port, address, 0x00, 0x40)?; // Set VCOM Deselect Level
-    write(port, address, 0x00, 0x20)?; // Set Page Addressing Mode (0x00/0x01/0x02)
+    write(port, address, 0x00, 0x40)?; // set VCOM Deselect Level
+    write(port, address, 0x00, 0x20)?; // set Page Addressing Mode (0x00/0x01/0x02)
     write(port, address, 0x00, 0x02)?; //
-    write(port, address, 0x00, 0xA4)?; // Disable Entire Display On (0xa4/0xa5)
-    write(port, address, 0x00, 0xA6)?; // Disable Inverse Display On (0xa6/a7)
+    write(port, address, 0x00, 0xA4)?; // disable Entire Display On (0xa4/0xa5)
+    write(port, address, 0x00, 0xA6)?; // disable Inverse Display On (0xa6/a7)
 
     blinky::delay(delay);
     write(port, address, 0x00, 0xAF)?; // turn on oled panel

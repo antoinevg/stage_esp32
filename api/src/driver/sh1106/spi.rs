@@ -1,7 +1,4 @@
 use core::convert::TryFrom;
-use num_enum::{IntoPrimitive, TryFromPrimitive};
-
-use cty::{uint8_t, c_void};
 
 use esp_idf::{AsResult, EspError, portMAX_DELAY, portTICK_RATE_MS};
 use esp_idf::bindings::{
@@ -26,6 +23,15 @@ use esp_idf::bindings::{
     spi_device_polling_transmit,
 };
 use esp_idf::bindings as idf;
+
+use cty::{uint8_t, c_void};
+use embedded_graphics::{
+    fonts::Font6x8,
+    icoord,
+    prelude::*,
+    primitives::{Circle, Line},
+};
+use num_enum::{IntoPrimitive, TryFromPrimitive};
 
 use crate::blinky;
 use crate::logger;
@@ -62,6 +68,11 @@ impl Pins {
 pub enum Mode {
     Command = 0,
     Data    = 1
+}
+
+enum Power {
+    EXTERNALVCC          = 0x1,
+    SWITCHCAPVCC         = 0x2,
 }
 
 
@@ -135,7 +146,7 @@ pub unsafe fn init(device: spi_host_device_t, pins: Pins) -> Result<(spi_device_
     // TODO check handle for null pointer
 
     // reset
-    log!(TAG, "resetting display peripheral");
+    /*log!(TAG, "resetting display peripheral");
     let reset = gpio_num_t::GPIO_NUM_27;
     let delay = (0.001 * 168_000_000.) as u32;
     blinky::configure_pin_as_output(reset)?;
@@ -144,7 +155,7 @@ pub unsafe fn init(device: spi_host_device_t, pins: Pins) -> Result<(spi_device_
     blinky::set_led(reset, false)?;
     blinky::delay(delay * 200);
     blinky::set_led(reset, true)?;
-    blinky::delay(delay * 10);
+    blinky::delay(delay * 10);*/
 
     Ok(handle)
 }
@@ -160,50 +171,49 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
         transmit(gpio_dc, handle, bytes, Mode::Command)
     };
 
-    //let vcc = Register::EXTERNALVCC;
-    let vcc = Register::SWITCHCAPVCC;
+    //let vcc = Power::EXTERNALVCC;
+    let vcc = Power::SWITCHCAPVCC;
 
+    // configure display
     command(&[Register::DISPLAYOFF.into()])?;           // 0xAE
-    command(&[Register::SETDISPLAYCLOCKDIV.into()])?;   // 0xD5
-    command(&[0x80])?;                              // the suggested ratio 0x80
-    command(&[Register::SETMULTIPLEX.into()])?;         // 0xA8
-    command(&[0x3F])?;                              // ???
-    command(&[Register::SETDISPLAYOFFSET.into()])?;     // 0xD3
-    command(&[0x00])?;                              // no offset
-
-    command(&[Register::SETSTARTLINE as u8 | 0x00])?;  // line #0 0x40
-    command(&[Register::CHARGEPUMP.into()])?;           // 0x8D
-    match vcc {
-        Register::EXTERNALVCC  => command(&[0x10]),
-        Register::SWITCHCAPVCC => command(&[0x14]),
-        _ => Ok(())
-    }?;
-    command(&[Register::MEMORYMODE.into()])?;           // 0x20
-    command(&[0x00])?;                        // 0x0 act like ks0108
-    command(&[Register::SEGREMAP as u8 | 0x01])?;
-    command(&[Register::COMSCANDEC.into()])?;
-    command(&[Register::SETCOMPINS.into()])?;           // 0xDA
-    command(&[0x12])?;
+    command(&[Register::SETLOWCOLUMN.into()])?;         // 0x02
+    command(&[Register::SETHIGHCOLUMN.into()])?;        // 0x10
+    command(&[Register::SETSTARTLINE.into()])?;         // 0x40
     command(&[Register::SETCONTRAST.into()])?;          // 0x81
     match vcc {
-        Register::EXTERNALVCC  => command(&[0x9f]),
-        Register::SWITCHCAPVCC => command(&[0xcf]),
-        _ => Ok(())
+        Power::EXTERNALVCC  => command(&[0x9f]),
+        Power::SWITCHCAPVCC => command(&[0xcf]),
     }?;
-    command(&[Register::SETPRECHARGE.into()])?;         // 0xd9
+    command(&[Register::SEGREMAP.into()])?;             // 0xA0
+    command(&[Register::COMSCANINC.into()])?;           // 0xC0
+    command(&[Register::NORMALDISPLAY.into()])?;        // 0xA6
+    command(&[Register::SETMULTIPLEX.into()])?;         // 0xA8
+    command(&[0x3F])?;                              // 1/64 duty
+    command(&[Register::SETDISPLAYOFFSET.into()])?;     // 0xD3
+    command(&[0x00])?;                              // no offset
+    command(&[Register::SETDISPLAYCLOCKDIV.into()])?;   // 0xD5
+    command(&[0x80])?;                              // 100 Frames/Sec
+    command(&[Register::SETPRECHARGE.into()])?;         // 0xD9
     match vcc {
-        Register::EXTERNALVCC  => command(&[0x22]),
-        Register::SWITCHCAPVCC => command(&[0xf1]),
-        _ => Ok(())
+        Power::EXTERNALVCC  => command(&[0x22]),
+        Power::SWITCHCAPVCC => command(&[0xf1]),    // 15 Clocks & Discharge as 1 Clock
     }?;
+    command(&[Register::CHARGEPUMP.into()])?;           // 0x8D
+    match vcc {
+        Power::EXTERNALVCC  => command(&[0x10]),
+        Power::SWITCHCAPVCC => command(&[0x14]),
+    }?;
+    command(&[Register::SETCOMPINS.into()])?;           // 0xDA
+    command(&[0x12])?;
     command(&[Register::SETVCOMDETECT.into()])?;        // 0xDB
     command(&[0x40])?;
+    command(&[Register::MEMORYMODE.into()])?;           // 0x20
+    command(&[0x02])?;                        // 0x0 act like ks0108, 0x2 ???
     command(&[Register::DISPLAYALLON_RESUME.into()])?;  // 0xA4
     command(&[Register::NORMALDISPLAY.into()])?;        // 0xA6
 
+    // turn on display
     command(&[Register::DISPLAYON.into()])?;
-
-    blinky::delay(delay);
 
     // allocate a page_buffer
     log!(TAG, "allocating memory for page buffer");
@@ -211,7 +221,17 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
     #[allow(non_upper_case_globals)] const height: usize = 64;
     let mut page_buffer: [u8; width] = [0x00; width];
 
-    // TODO blank display
+    // blank display
+    for page in 0usize..8 {
+        let page_address = (0xb0 + page) as u8;
+        command(&[page_address])?;                   // set page address
+        command(&[Register::SETLOWCOLUMN.into()])?;  // set lower column address
+        command(&[Register::SETHIGHCOLUMN.into()])?; // set higher column address
+        command(&[Register::SETSTARTLINE.into()])?;
+        transmit(gpio_dc, handle, &page_buffer, Mode::Data)?;       // write data for page
+    }
+
+    idf::vTaskDelay(50);
 
     // generate data for a test pattern
     log!(TAG, "generate test pattern data");
@@ -222,15 +242,30 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
 
     // blit test pattern to the display
     log!(TAG, "display test pattern");
-    command(&[Register::SETLOWCOLUMN  as u8 | 0x00])?;
-    command(&[Register::SETHIGHCOLUMN as u8 | 0x00])?;
-    command(&[Register::SETSTARTLINE  as u8 | 0x00])?;
     for page in 0usize..8 {
         let page_address = (0xb0 + page) as u8;
-        command(&[Register::SETPAGEADDRESS as u8 | page_address])?; // set page address
-        command(&[Register::SETLOWCOLUMN   as u8 | 0x02])?;         // set lower column address
-        command(&[Register::SETHIGHCOLUMN  as u8 | 0x00])?;         // set higher column address
+        command(&[page_address])?;                   // set page address
+        command(&[Register::SETLOWCOLUMN.into()])?;  // set lower column address
+        command(&[Register::SETHIGHCOLUMN.into()])?; // set higher column address
+        command(&[Register::SETSTARTLINE.into()])?;
         transmit(gpio_dc, handle, &page_buffer, Mode::Data)?;       // write data for page
+    }
+
+    idf::vTaskDelay(50);
+
+    // test graphics library
+    let mut display = crate::display::Display::new();
+    let circle = Circle::new(icoord!(16, 16), 16).stroke(Some(1u8.into()));
+    let text = Font6x8::render_str("Hello Rust!").fill(Some(20u8.into())).translate(Coord::new(20, 16));
+    display.draw(circle);
+    display.draw(text);
+    for page in 0usize..8 {
+        let page_address = (0xb0 + page) as u8;
+        command(&[page_address])?;                   // set page address
+        command(&[Register::SETLOWCOLUMN.into()])?;  // set lower column address
+        command(&[Register::SETHIGHCOLUMN.into()])?; // set higher column address
+        command(&[Register::SETSTARTLINE.into()])?;
+        transmit(gpio_dc, handle, &display.page_buffer[page], Mode::Data)?;       // write data for page
     }
 
     Ok(())
@@ -281,9 +316,8 @@ enum Register {
 
     SETMULTIPLEX         = 0xA8,
 
-    SETLOWCOLUMN         = 0x00,
+    SETLOWCOLUMN         = 0x02,
     SETHIGHCOLUMN        = 0x10,
-
     SETSTARTLINE         = 0x40,
 
     SETPAGEADDRESS       = 0xB0,
@@ -298,7 +332,4 @@ enum Register {
     SEGREMAP             = 0xA0,
 
     CHARGEPUMP           = 0x8D,
-
-    EXTERNALVCC          = 0x1,
-    SWITCHCAPVCC         = 0x2,
 }
