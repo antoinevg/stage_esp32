@@ -52,12 +52,6 @@ unsafe impl Codec for Driver {
         }
         log!(TAG, "allocated memory for dma buffer: {} bytes", buffer_size);
 
-        // initialize i2s peripheral
-        log!(TAG, "initialize i2s peripheral");
-        unsafe { i2s::init(i2s_port, self.i2s_pins, config)?; }
-
-        unsafe { idf::ets_delay_us(1000); } // give i2s a few cycles to settle
-
         // initialize i2c peripheral
         log!(TAG, "initialize i2c peripheral");
         unsafe { i2c::init(i2c_port, self.i2c_pins)?; }
@@ -66,6 +60,16 @@ unsafe impl Codec for Driver {
         log!(TAG, "configure codec over i2c");
         let codec_i2c_address = 0x1a; // or 0x1b if CSB is high
         unsafe { i2c::configure(i2c_port, codec_i2c_address)?; }
+
+        unsafe { idf::ets_delay_us(1000); } // give i2s a few cycles to settle
+        unsafe { idf::vTaskDelay(10); }
+
+        // initialize i2s peripheral
+        log!(TAG, "initialize i2s peripheral");
+        unsafe { i2s::init(i2s_port, self.i2s_pins, config)?; }
+
+        unsafe { idf::ets_delay_us(1000); } // give i2s a few cycles to settle
+        unsafe { idf::vTaskDelay(10); }
 
         Ok(())
     }
@@ -158,14 +162,7 @@ unsafe impl Codec for Driver {
 
     fn start_c(&self, config: &Config,
                opaque_interface_ptr: *const OpaqueInterface) -> Result<(), EspError> {
-        unsafe {
-            C_api_driver_sgtl5000_start(opaque_interface_ptr,
-                                        config.fs,
-                                        config.num_channels,
-                                        config.word_size,
-                                        config.block_size).as_result()?;
-        }
-
+        // not supported
         Ok(())
     }
 }
@@ -208,7 +205,7 @@ pub mod i2s {
         // initialize i2s driver
         log!(TAG, "initialize i2s peripheral");
         let i2s_config = i2s_config_t {
-            mode: i2s_mode_t::I2S_MODE_MASTER
+            mode: i2s_mode_t::I2S_MODE_SLAVE
                 | i2s_mode_t::I2S_MODE_RX
                 | i2s_mode_t::I2S_MODE_TX,
             sample_rate: config.fs as c_int,
@@ -219,8 +216,7 @@ pub mod i2s {
             intr_alloc_flags: ESP_INTR_FLAG_LEVEL1 as i32,
             dma_buf_count: 4,
             dma_buf_len: config.block_size as i32,
-            use_apll: true,
-            //fixed_mclk: 12_288_000,
+            use_apll: false,
             ..i2s_config_t::default()
         };
         i2s_driver_install(port, &i2s_config, 0, core::ptr::null_mut()).as_result()?;

@@ -10,6 +10,7 @@ use crate::logger;
 pub mod adac;
 pub mod sgtl5000;
 pub mod sh1106;
+pub mod wm8731;
 
 
 // - global constants ---------------------------------------------------------

@@ -54,8 +54,8 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
         mode:  i2c_mode_t::I2C_MODE_MASTER,
         scl_io_num:  pins.scl,
         sda_io_num:  pins.sda,
-        scl_pullup_en:  gpio_pullup_t::GPIO_PULLUP_ENABLE,
-        sda_pullup_en:  gpio_pullup_t::GPIO_PULLUP_ENABLE,
+        scl_pullup_en:  gpio_pullup_t::GPIO_PULLUP_DISABLE,
+        sda_pullup_en:  gpio_pullup_t::GPIO_PULLUP_DISABLE,
         __bindgen_anon_1: idf::i2c_config_t__bindgen_ty_1 {
             master: idf::i2c_config_t__bindgen_ty_1__bindgen_ty_1 {
                 clk_speed: 100_000
@@ -71,114 +71,70 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
     Ok(())
 }
 
+
 pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
+    idf::vTaskDelay(1);
 
-    // TODO
+    for (register, value) in REGISTER_CONFIG {
+        log!(TAG, "Configure register {:?}: 0x{:x}", register, value);
 
-    Ok(())
-}
+        let register: u8 = (*register).into();
+        let byte1: u8 = (register << 1) | (value >> 8);
+        let byte2: u8 = value & 0xFF;
 
+        let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
+        i2c_master_start(cmd).as_result()?;
+        i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
+        i2c_master_write_byte(cmd, byte1, ACK_CHECK_EN).as_result()?;
+        i2c_master_write_byte(cmd, byte2, ACK_CHECK_EN).as_result()?;
+        i2c_master_stop(cmd).as_result()?;
+        i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
+        i2c_cmd_link_delete(cmd);
 
-
-// - read ---------------------------------------------------------------------
-
-unsafe fn read(port: i2c_port_t, address: u8, register: Register) -> Result<u16, EspError> {
-    let register: u16 = register.into();
-
-    let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
-
-    // start
-    i2c_master_start(cmd).as_result()?;
-
-    // set write bit for address
-    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
-
-    // write register address
-    i2c_master_write_byte(cmd, (register >> 8) as u8 & 0xff, ACK_CHECK_EN).as_result()?; // msb
-    i2c_master_write_byte(cmd, (register & 0xff) as u8, ACK_CHECK_EN).as_result()?;      // lsb
-    //let mut register: [u8; 2] = u16::to_le_bytes(register.into());
-    //i2c_master_write(cmd, register.as_mut_ptr(), 2, ACK_CHECK_EN).as_result()?;
-
-    // restart
-    i2c_master_start(cmd).as_result()?;
-
-    // set read bit for address
-    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_READ as u8, ACK_CHECK_EN).as_result()?;
-
-    // read register value
-    let mut msb: u8 = 0;
-    let mut lsb: u8 = 0;
-    i2c_master_read_byte(cmd, &mut msb as *mut u8, i2c_ack_type_t::I2C_MASTER_ACK);  // msb
-    i2c_master_read_byte(cmd, &mut lsb as *mut u8, i2c_ack_type_t::I2C_MASTER_NACK); // lsb
-
-    // stop
-    i2c_master_stop(cmd).as_result()?;
-
-    // send
-    i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
-    i2c_cmd_link_delete(cmd);
-
-    // get register value
-    let value: u16 = ((msb as u16) << 8) | (lsb as u16);
-
-    Ok(value)
-}
-
-
-// - write --------------------------------------------------------------------
-
-unsafe fn write(port: i2c_port_t, address: u8, register: Register, value: u16) -> Result<(), EspError> {
-    let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
-
-    // start
-    i2c_master_start(cmd).as_result()?;
-
-    // set write bit for address
-    i2c_master_write_byte(cmd, (address << 1) | i2c_rw_t::I2C_MASTER_WRITE as u8, ACK_CHECK_EN).as_result()?;
-
-    // write value to register
-    let register: u16 = register.into();
-    let value: u16 = value.into();
-    let mut bytes: [u8; 4] = [
-        ((register >> 8) & 0x00ff) as u8,
-        (register & 0x00ff) as u8,
-        ((value >> 8) & 0x00ff) as u8,
-        (value & 0x00ff) as u8,
-    ];
-    //let register: [u8; 2] = u16::to_le_bytes(register.into());
-    //let value: [u8; 2] = u16::to_le_bytes(value.into());
-    //let bytes: [u8; 4] = [ register[0], register[1], value[0], value[1] ];
-    i2c_master_write(cmd, bytes.as_mut_ptr(), 4, ACK_CHECK_EN).as_result()?;
-
-    // stop
-    i2c_master_stop(cmd).as_result()?;
-
-    // send
-    i2c_master_cmd_begin(port, cmd, 1000 / portTICK_RATE_MS).as_result()?;
-    i2c_cmd_link_delete(cmd);
+        idf::vTaskDelay(1);
+    }
 
     Ok(())
 }
 
-
-// - modify -------------------------------------------------------------------
-
-unsafe fn modify(port: i2c_port_t, address: u8,
-                 register: Register,
-                 bit_hi: u16, bit_lo: u16, value: u16) -> Result<(), EspError> {
-
-    let current = read(port, address, register)?;
-
-    let width = (bit_hi - bit_lo) + 1;
-    let position = bit_lo;
-    let mask = ((2 << (width - 1)) - 1) << position;
-
-    let write_value = (current & (!mask)) | (value << position);
-
-    write(port, address, register, write_value)
-}
 
 
 // - codec register addresses -------------------------------------------------
 
-type Register = u16;
+#[allow(non_camel_case_types)]
+#[derive(Debug, Copy, Clone, IntoPrimitive)]
+#[repr(u8)]
+enum Register {
+    LINVOL = 0x00,
+    RINVOL = 0x01,
+    LOUT1V = 0x02,
+    ROUT1V = 0x03,
+    APANA  = 0x04,
+    APDIGI = 0x05, // 0000_0101
+    PWR    = 0x06,
+    IFACE  = 0x07, // 0000_0111
+    SRATE  = 0x08, // 0000_1000
+    ACTIVE = 0x09, // 0000_1001
+    RESET  = 0x0F,
+}
+
+
+const REGISTER_CONFIG: &[(Register, u8)] = &[
+    (Register::PWR,    0x80),
+    (Register::RESET,  0x00),
+    (Register::ACTIVE, 0x00),
+    (Register::APANA,  0x12),
+    //(Register::APANA,  0b0001_0010), // MICBOOST=0 MUTEMIC=1 INSEL=0 BYPASS=0 DACSEL=1 SIDETONE=0
+    (Register::APDIGI, 0x00),
+    (Register::PWR,    0x00),
+    //(Register::IFACE,  0x02),
+    (Register::IFACE,  0b0100_0010), // 0x40 FORMAT=b10 IRL=b00 LRP=0 LRSWAP=0 MS=1 BCKLINV=0
+    //(Register::IFACE,  0b0000_0010), // 0x40 FORMAT=b10 IRL=b00 LRP=0 LRSWAP=0 MS=0 BCKLINV=0
+    //(Register::SRATE,  0b0000_0000), // MODE=0 BOSR=0 FS=48Khz CLKIDIV2=0 CLKODIV2=0
+    (Register::SRATE,  0b0000_0001), // MODE=1 BOSR=0 FS=48Khz CLKIDIV2=0 CLKODIV2=0
+    (Register::LINVOL, 0x17),
+    (Register::RINVOL, 0x17),
+    (Register::LOUT1V, 0x7F),
+    (Register::ROUT1V, 0x7F),
+    (Register::ACTIVE, 0x01),
+];
