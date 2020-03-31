@@ -73,13 +73,11 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
 
 
 pub unsafe fn configure(port: i2c_port_t, address: u8) -> Result<(), EspError> {
-    idf::vTaskDelay(1);
-
     for (register, value) in REGISTER_CONFIG {
         log!(TAG, "Configure register {:?}: 0x{:x}", register, value);
 
         let register: u8 = (*register).into();
-        let byte1: u8 = (register << 1) | (value >> 8);
+        let byte1: u8 = ((register << 1) & 0xfe) | ((value >> 8) & 0x01u8);
         let byte2: u8 = value & 0xFF;
 
         let cmd: i2c_cmd_handle_t = i2c_cmd_link_create();
@@ -118,23 +116,27 @@ enum Register {
     RESET  = 0x0F,
 }
 
-
 const REGISTER_CONFIG: &[(Register, u8)] = &[
     (Register::PWR,    0x80),
     (Register::RESET,  0x00),
     (Register::ACTIVE, 0x00),
+
     (Register::APANA,  0x12),
     //(Register::APANA,  0b0001_0010), // MICBOOST=0 MUTEMIC=1 INSEL=0 BYPASS=0 DACSEL=1 SIDETONE=0
+
     (Register::APDIGI, 0x00),
     (Register::PWR,    0x00),
-    //(Register::IFACE,  0x02),
-    (Register::IFACE,  0b0100_0010), // 0x40 FORMAT=b10 IRL=b00 LRP=0 LRSWAP=0 MS=1 BCKLINV=0
-    //(Register::IFACE,  0b0000_0010), // 0x40 FORMAT=b10 IRL=b00 LRP=0 LRSWAP=0 MS=0 BCKLINV=0
-    //(Register::SRATE,  0b0000_0000), // MODE=0 BOSR=0 FS=48Khz CLKIDIV2=0 CLKODIV2=0
-    (Register::SRATE,  0b0000_0001), // MODE=1 BOSR=0 FS=48Khz CLKIDIV2=0 CLKODIV2=0
+
+    (Register::IFACE,  0x02),
+    //(Register::IFACE,  0b0000_0010), // 0x02 FORMAT=b10 IRL=b00 LRP=0 LRSWAP=0 MS=0 BCKLINV=0
+    //(Register::IFACE,  0b0100_0010), // 0x42 FORMAT=b10 IRL=b00 LRP=0 LRSWAP=0 MS=1 BCKLINV=0
+
+    (Register::SRATE,  0b0000_0000), // MODE=0 BOSR=0 FS=48Khz CLKIDIV2=0 CLKODIV2=0
+    //(Register::SRATE,  0b0000_0001), // MODE=1 BOSR=0 FS=48Khz CLKIDIV2=0 CLKODIV2=0
+
     (Register::LINVOL, 0x17),
     (Register::RINVOL, 0x17),
-    (Register::LOUT1V, 0x7F),
-    (Register::ROUT1V, 0x7F),
+    (Register::LOUT1V, 0x79),  // 0dB
+    (Register::ROUT1V, 0x79),  // 0dB
     (Register::ACTIVE, 0x01),
 ];

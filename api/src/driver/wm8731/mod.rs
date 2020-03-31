@@ -61,15 +61,13 @@ unsafe impl Codec for Driver {
         let codec_i2c_address = 0x1a; // or 0x1b if CSB is high
         unsafe { i2c::configure(i2c_port, codec_i2c_address)?; }
 
-        unsafe { idf::ets_delay_us(1000); } // give i2s a few cycles to settle
-        unsafe { idf::vTaskDelay(10); }
+        unsafe { idf::ets_delay_us(1000); } // give codec a few cycles to settle
 
         // initialize i2s peripheral
         log!(TAG, "initialize i2s peripheral");
         unsafe { i2s::init(i2s_port, self.i2s_pins, config)?; }
 
         unsafe { idf::ets_delay_us(1000); } // give i2s a few cycles to settle
-        unsafe { idf::vTaskDelay(10); }
 
         Ok(())
     }
@@ -205,7 +203,7 @@ pub mod i2s {
         // initialize i2s driver
         log!(TAG, "initialize i2s peripheral");
         let i2s_config = i2s_config_t {
-            mode: i2s_mode_t::I2S_MODE_SLAVE
+            mode: i2s_mode_t::I2S_MODE_MASTER
                 | i2s_mode_t::I2S_MODE_RX
                 | i2s_mode_t::I2S_MODE_TX,
             sample_rate: config.fs as c_int,
