@@ -87,27 +87,6 @@ pub unsafe fn init(port: i2c_port_t, pins: Pins) -> Result<(), EspError> {
 
 
 pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Result<(), EspError> {
-    // also see: https://github.com/Devilbinder/SH1106/blob/master/SH1106.cpp
-
-    // reset display
-    log!(TAG, "resetting display peripheral");
-    let delay = (0.001 * 168_000_000.) as u32;
-    /*blinky::configure_pin_as_output(reset)?;
-    blinky::set_led(reset, true)?;
-    blinky::delay(delay * 10);
-    blinky::set_led(reset, false)?;
-    blinky::delay(delay * 200);
-    blinky::set_led(reset, true)?;
-    blinky::delay(delay * 10);*/
-
-    // TODO check if display is reachable over i2s
-    /*let value = read(port, address, 0x00); //Register::CHIP_ID)?;
-    if (value & 0xFF00) != 0x3c00 {
-        log!(TAG, "unknown display chip ID: 0x{:x}", value);
-        return Err(idf::ESP_ERR_INVALID_RESPONSE.into());
-    }
-    log!(TAG, "SH1106 display driver chip ID: 0x{:x}", value);*/
-
     log!(TAG, "configuring sh1106 oled display at address: 0x{:x}", address);
     write(port, address, 0x00, 0xAE)?; // turn off oled panel
     write(port, address, 0x00, 0x02)?; // set low column address
@@ -134,7 +113,9 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
     write(port, address, 0x00, 0xA4)?; // disable Entire Display On (0xa4/0xa5)
     write(port, address, 0x00, 0xA6)?; // disable Inverse Display On (0xa6/a7)
 
+    let delay = (0.001 * 168_000_000.) as u32;
     blinky::delay(delay);
+
     write(port, address, 0x00, 0xAF)?; // turn on oled panel
 
     // allocate a page_buffer
@@ -167,22 +148,6 @@ pub unsafe fn configure(reset: gpio_num_t, port: i2c_port_t, address: u8) -> Res
         write(port, address, 0x00, 0x10)?;               // set high column address
         write_bytes(port, address, 0x40, &page_buffer)?; // write data for page
     }
-
-    // test graphics library
-    let mut display = crate::display::Display::new();
-    let circle = Circle::new(icoord!(16, 16), 16).stroke(Some(1u8.into()));
-    let text = Font6x8::render_str("Hello Rust!").fill(Some(20u8.into())).translate(Coord::new(20, 16));
-    display.draw(circle);
-    display.draw(text);
-
-    for page in 0usize..8 {
-        let page_address = (0xb0 + page) as u8;
-        write(port, address, 0x00, page_address)?;       // set page address
-        write(port, address, 0x00, 0x02)?;               // set low column address
-        write(port, address, 0x00, 0x10)?;               // set high column address
-        write_bytes(port, address, 0x40, &display.page_buffer[page])?; // write data for page
-    }
-
 
     Ok(())
 }
@@ -306,9 +271,6 @@ unsafe fn write_u16(port: i2c_port_t, address: u8, register: Register, value: u1
         ((value >> 8) & 0x00ff) as u8,
         (value & 0x00ff) as u8,
     ];
-    //let register: [u8; 2] = u16::to_le_bytes(register.into());
-    //let value: [u8; 2] = u16::to_le_bytes(value.into());
-    //let bytes: [u8; 4] = [ register[0], register[1], value[0], value[1] ];
     i2c_master_write(cmd, bytes.as_mut_ptr(), 4, ACK_CHECK_EN).as_result()?;
 
     // stop

@@ -120,11 +120,8 @@ pub unsafe fn init(device: spi_host_device_t, pins: Pins) -> Result<(spi_device_
         pre_cb: Some(pre_transfer_callback), // callback to handle d/c line
         ..spi_device_interface_config_t::default()
     };
-    //let mut handle = spi_device_t { _unused: [0; 0] };
-    // TODO spi_device_handle_t = *mut spi_device_t;
-    //spi_bus_add_device(device, &config, &mut ((&mut handle) as idf::spi_device_handle_t));
     let mut handle = core::ptr::null_mut();
-    spi_bus_add_device(device, &config, &mut handle);
+    spi_bus_add_device(device, &config, &mut handle); // TODO check returned handle for null pointer
 
     // pre-transfer callback
     extern "C" fn pre_transfer_callback(transaction: *mut idf::spi_transaction_t) -> ()  {
@@ -143,32 +140,17 @@ pub unsafe fn init(device: spi_host_device_t, pins: Pins) -> Result<(spi_device_
         unsafe { gpio_set_level(gpio_dc, mode as u32) };
     }
 
-    // TODO check handle for null pointer
-
-    // reset
-    /*log!(TAG, "resetting display peripheral");
-    let reset = gpio_num_t::GPIO_NUM_27;
-    let delay = (0.001 * 168_000_000.) as u32;
-    blinky::configure_pin_as_output(reset)?;
-    blinky::set_led(reset, true)?;
-    blinky::delay(delay * 10);
-    blinky::set_led(reset, false)?;
-    blinky::delay(delay * 200);
-    blinky::set_led(reset, true)?;
-    blinky::delay(delay * 10);*/
-
     Ok(handle)
 }
 
 
-pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Result<(), EspError> {
+pub unsafe fn configure(handle: spi_device_handle_t, gpio_dc: gpio_num_t) -> Result<(), EspError> {
     let delay = (0.001 * 168_000_000.) as u32;
 
-    log!(TAG, "configuring sh1106 oled display with dc:{:?} handle:{:?}", gpio_dc, handle);
+    log!(TAG, "configuring sh1106 oled display with handle:{:?} dc:{:?}", handle, gpio_dc);
 
     let command = |bytes: &[u8]| -> Result<(), EspError> {
-        //log!(TAG, "Sending command: 0x{:x}", bytes[0]);
-        transmit(gpio_dc, handle, bytes, Mode::Command)
+        transmit(handle, gpio_dc, bytes, Mode::Command)
     };
 
     //let vcc = Power::EXTERNALVCC;
@@ -218,7 +200,6 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
     // allocate a page_buffer
     log!(TAG, "allocating memory for page buffer");
     #[allow(non_upper_case_globals)] const width: usize = 128;
-    #[allow(non_upper_case_globals)] const height: usize = 64;
     let mut page_buffer: [u8; width] = [0x00; width];
 
     // blank display
@@ -228,10 +209,8 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
         command(&[Register::SETLOWCOLUMN.into()])?;  // set lower column address
         command(&[Register::SETHIGHCOLUMN.into()])?; // set higher column address
         command(&[Register::SETSTARTLINE.into()])?;
-        transmit(gpio_dc, handle, &page_buffer, Mode::Data)?;       // write data for page
+        transmit(handle, gpio_dc, &page_buffer, Mode::Data)?;       // write data for page
     }
-
-    idf::vTaskDelay(50);
 
     // generate data for a test pattern
     log!(TAG, "generate test pattern data");
@@ -248,31 +227,16 @@ pub unsafe fn configure(gpio_dc: gpio_num_t, handle: spi_device_handle_t) -> Res
         command(&[Register::SETLOWCOLUMN.into()])?;  // set lower column address
         command(&[Register::SETHIGHCOLUMN.into()])?; // set higher column address
         command(&[Register::SETSTARTLINE.into()])?;
-        transmit(gpio_dc, handle, &page_buffer, Mode::Data)?;       // write data for page
+        transmit(handle, gpio_dc, &page_buffer, Mode::Data)?;       // write data for page
     }
 
-    idf::vTaskDelay(50);
-
-    // test graphics library
-    let mut display = crate::display::Display::new();
-    let circle = Circle::new(icoord!(16, 16), 16).stroke(Some(1u8.into()));
-    let text = Font6x8::render_str("Hello Rust!").fill(Some(20u8.into())).translate(Coord::new(20, 16));
-    display.draw(circle);
-    display.draw(text);
-    for page in 0usize..8 {
-        let page_address = (0xb0 + page) as u8;
-        command(&[page_address])?;                   // set page address
-        command(&[Register::SETLOWCOLUMN.into()])?;  // set lower column address
-        command(&[Register::SETHIGHCOLUMN.into()])?; // set higher column address
-        command(&[Register::SETSTARTLINE.into()])?;
-        transmit(gpio_dc, handle, &display.page_buffer[page], Mode::Data)?;       // write data for page
-    }
+    idf::vTaskDelay(100);
 
     Ok(())
 }
 
 
-pub unsafe fn transmit(gpio_dc: gpio_num_t, handle: spi_device_handle_t, bytes: &[u8], mode: Mode) -> Result<(), EspError> {
+pub unsafe fn transmit(handle: spi_device_handle_t, gpio_dc: gpio_num_t, bytes: &[u8], mode: Mode) -> Result<(), EspError> {
     //log!(TAG, "transmit dc:{:?} handle:{:?} bytes:{:x?} mode:{:?}", gpio_dc, handle, bytes, mode);
     let mut transaction = spi_transaction_t {
         length: bytes.len() * 8, // spi transaction length is measure in bits
@@ -297,7 +261,7 @@ pub unsafe fn transmit(gpio_dc: gpio_num_t, handle: spi_device_handle_t, bytes: 
 #[allow(non_camel_case_types)]
 #[derive(IntoPrimitive)]
 #[repr(u8)]
-enum Register {
+pub enum Register {
     SETCONTRAST          = 0x81,
     DISPLAYALLON_RESUME  = 0xA4,
     DISPLAYALLON         = 0xA5,

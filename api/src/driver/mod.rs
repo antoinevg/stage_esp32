@@ -38,5 +38,5 @@ pub unsafe trait Display {
 
     fn init(&mut self, config: &display::Config) -> Result<(), EspError>;
 
-    fn write(&self) -> Result<(), EspError>;
+    fn write(&self, frame_buffer: &[u8]) -> Result<(), EspError>;
 }

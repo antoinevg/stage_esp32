@@ -16,22 +16,30 @@ pub mod spi;
 
 const TAG: &str = "api::driver::sh1106";
 
+pub const WIDTH: usize = 128;
+pub const HEIGHT: usize = 64;
+pub const PAGES: usize = 8;
+
 
 // - driver -------------------------------------------------------------------
 
+pub type FrameBuffer = [[u8; WIDTH]; PAGES];
+
 pub struct Driver {
+    pub reset_pin: idf::gpio_num_t, // not used in current revision
     pub i2c_pins: crate::i2c::Pins,
     pub spi_pins: spi::Pins,
-    pub reset_pin: idf::gpio_num_t,
+    spi_handle: Option<esp_idf::bindings::spi_device_handle_t>,
 }
 
 
 unsafe impl Display for Driver {
     fn new() -> Driver {
         Driver {
+            reset_pin: idf::gpio_num_t::GPIO_NUM_23,
             i2c_pins: crate::i2c::Pins::new(),
             spi_pins: spi::Pins::new(),
-            reset_pin: idf::gpio_num_t::GPIO_NUM_23,
+            spi_handle: None,
         }
     }
 
@@ -41,8 +49,6 @@ unsafe impl Display for Driver {
         let spi_device = idf::spi_host_device_t::SPI3_HOST;
 
         log!(TAG, "initialize display subsystem");
-
-        // TODO allocate memory etc.
 
         // - i2c ------------------------------
         // initialize i2c peripheral
@@ -54,13 +60,32 @@ unsafe impl Display for Driver {
 
         // - spi ------------------------------
         log!(TAG, "initialize spi display peripheral");
-        let handle = unsafe { spi::init(spi_device, self.spi_pins)? };
-        unsafe { spi::configure(self.spi_pins.dc, handle)?; }
+        self.spi_handle = Some(unsafe { spi::init(spi_device, self.spi_pins)? });
+        unsafe { spi::configure(self.spi_handle.unwrap(), self.spi_pins.dc)?; }
 
         Ok(())
     }
 
-    fn write(&self/*, config: &Config, callback_buffer: &[f32]*/) -> Result<(), EspError> {
+    fn write(&self, frame_buffer: &[u8]) -> Result<(), EspError> {
+        let display_address = 0x3c;
+        let gpio_dc = self.spi_pins.dc;
+        let command = |bytes: &[u8]| -> Result<(), EspError> {
+            unsafe { spi::transmit(self.spi_handle.unwrap(), gpio_dc, bytes, spi::Mode::Command) }
+        };
+
+        for page in 0usize..PAGES {
+            let page_address = (0xb0 + page) as u8;
+            command(&[page_address])?;                         // set page address
+            command(&[spi::Register::SETLOWCOLUMN.into()])?;   // set lower column address
+            command(&[spi::Register::SETHIGHCOLUMN.into()])?;  // set higher column address
+            command(&[spi::Register::SETSTARTLINE.into()])?;
+
+            let page_start = page * WIDTH;
+            let page_end = page_start + WIDTH;
+            let page_buffer = &frame_buffer[page_start..page_end];
+            unsafe { spi::transmit(self.spi_handle.unwrap(), gpio_dc, &page_buffer, spi::Mode::Data)?; }
+        }
+
         Ok(())
     }
 }

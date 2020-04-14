@@ -43,16 +43,19 @@ where D: driver::Display {
     }
 
     pub fn start(&mut self) -> Result<(), EspError> {
+        self.driver.init(&mut self.config)
+    }
 
-        // initialize driver
-        self.driver.init(&mut self.config)?;
-
-        Ok(())
+    pub fn write(&self, frame_buffer: &[u8]) -> Result<(), EspError> {
+        self.driver.write(frame_buffer)
     }
 }
 
 
 // - embedded_graphics --------------------------------------------------------
+
+// TODO move this to driver::sh1106 - chances are we'll have to do one
+// of these for each physical display we want to support
 
 const WIDTH: usize = 128;
 const HEIGHT: usize = 64;
@@ -86,13 +89,13 @@ impl From<u8> for CustomPixelColor {
 }
 
 pub struct Display {
-    pub page_buffer: [[u8; WIDTH]; PAGES]
+    pub frame_buffer: [u8; WIDTH * PAGES],
 }
 
 impl Display {
     pub fn new() -> Display {
         Display {
-            page_buffer: [[0; WIDTH]; PAGES]
+            frame_buffer: [0; WIDTH * PAGES],
         }
     }
 }
@@ -111,10 +114,11 @@ impl Drawing<CustomPixelColor> for Display {
                 continue;
             }
 
+            let address = (page * WIDTH) + x;
             if color.value == 1 {
-                self.page_buffer[page][x] |= 1 << (y % 8);
+                self.frame_buffer[address] |= 1 << (y % 8);
             } else {
-                self.page_buffer[page][x] &= !(1 << (y % 8));
+                self.frame_buffer[address] &= !(1 << (y % 8));
             }
         }
     }
