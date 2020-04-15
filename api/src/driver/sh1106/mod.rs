@@ -20,6 +20,12 @@ pub const WIDTH: usize = 128;
 pub const HEIGHT: usize = 64;
 pub const PAGES: usize = 8;
 
+pub const CONFIG: Config = Config {
+    width: 128,
+    height: 64,
+    pages: 8,
+};
+
 
 // - driver -------------------------------------------------------------------
 
