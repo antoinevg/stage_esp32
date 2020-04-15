@@ -16,10 +16,6 @@ pub mod spi;
 
 const TAG: &str = "api::driver::sh1106";
 
-pub const WIDTH: usize = 128;
-pub const HEIGHT: usize = 64;
-pub const PAGES: usize = 8;
-
 pub const CONFIG: Config = Config {
     width: 128,
     height: 64,
@@ -28,8 +24,6 @@ pub const CONFIG: Config = Config {
 
 
 // - driver -------------------------------------------------------------------
-
-pub type FrameBuffer = [[u8; WIDTH]; PAGES];
 
 pub struct Driver {
     pub reset_pin: idf::gpio_num_t, // not used in current revision
@@ -79,15 +73,15 @@ unsafe impl Display for Driver {
             unsafe { spi::transmit(self.spi_handle.unwrap(), gpio_dc, bytes, spi::Mode::Command) }
         };
 
-        for page in 0usize..PAGES {
+        for page in 0usize..CONFIG.pages {
             let page_address = (0xb0 + page) as u8;
             command(&[page_address])?;                         // set page address
             command(&[spi::Register::SETLOWCOLUMN.into()])?;   // set lower column address
             command(&[spi::Register::SETHIGHCOLUMN.into()])?;  // set higher column address
             command(&[spi::Register::SETSTARTLINE.into()])?;
 
-            let page_start = page * WIDTH;
-            let page_end = page_start + WIDTH;
+            let page_start = page * CONFIG.width;
+            let page_end = page_start + CONFIG.width;
             let page_buffer = &frame_buffer[page_start..page_end];
             unsafe { spi::transmit(self.spi_handle.unwrap(), gpio_dc, &page_buffer, spi::Mode::Data)?; }
         }

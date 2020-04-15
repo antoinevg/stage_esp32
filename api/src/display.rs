@@ -96,7 +96,7 @@ impl<'a> Display<'a> {
     }
 }
 
-// TODO move to driver or use driver here
+// TODO move to driver or use driver
 impl Drawing<CustomPixelColor> for Display<'_> {
     fn draw<T>(&mut self, item_pixels: T) where T: IntoIterator<Item = Pixel<CustomPixelColor>> {
         for Pixel(coord, color) in item_pixels {
