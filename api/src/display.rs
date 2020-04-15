@@ -15,6 +15,11 @@ use crate::logger;
 const TAG: &str = "api::display";
 
 
+// - types --------------------------------------------------------------------
+
+pub type Buffer = [u8];
+
+
 // - display::Interface -------------------------------------------------------
 
 #[repr(C)]
@@ -46,7 +51,7 @@ where D: driver::Display {
         self.driver.init(&mut self.config)
     }
 
-    pub fn write(&self, frame_buffer: &[u8]) -> Result<(), EspError> {
+    pub fn write(&self, frame_buffer: &Buffer) -> Result<(), EspError> {
         self.driver.write(frame_buffer)
     }
 }
@@ -96,6 +101,13 @@ impl Display {
     pub fn new() -> Display {
         Display {
             frame_buffer: [0; WIDTH * PAGES],
+        }
+    }
+
+    // TODO figure out the 'right' way for the embedded_graphics crate
+    pub fn clear(&mut self) -> () {
+        for pixel in self.frame_buffer.iter_mut() {
+            *pixel = 0;
         }
     }
 }
