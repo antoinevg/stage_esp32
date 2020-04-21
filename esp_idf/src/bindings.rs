@@ -1338,7 +1338,7 @@ pub const CONFIG_ADC_CAL_LUT_ENABLE: u32 = 1;
 pub const CONFIG_ESP_ERR_TO_NAME_LOOKUP: u32 = 1;
 pub const CONFIG_ESP_SYSTEM_EVENT_QUEUE_SIZE: u32 = 32;
 pub const CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE: u32 = 2304;
-pub const CONFIG_ESP_MAIN_TASK_STACK_SIZE: u32 = 3584;
+pub const CONFIG_ESP_MAIN_TASK_STACK_SIZE: u32 = 16384;
 pub const CONFIG_ESP_IPC_TASK_STACK_SIZE: u32 = 1024;
 pub const CONFIG_ESP_TIMER_TASK_STACK_SIZE: u32 = 3584;
 pub const CONFIG_ESP_CONSOLE_UART_DEFAULT: u32 = 1;
@@ -1579,7 +1579,7 @@ pub const CONFIG_IPC_TASK_STACK_SIZE: u32 = 1024;
 pub const CONFIG_IP_LOST_TIMER_INTERVAL: u32 = 120;
 pub const CONFIG_LOG_BOOTLOADER_LEVEL: u32 = 3;
 pub const CONFIG_LOG_BOOTLOADER_LEVEL_INFO: u32 = 1;
-pub const CONFIG_MAIN_TASK_STACK_SIZE: u32 = 3584;
+pub const CONFIG_MAIN_TASK_STACK_SIZE: u32 = 16384;
 pub const CONFIG_MB_CONTROLLER_NOTIFY_QUEUE_SIZE: u32 = 20;
 pub const CONFIG_MB_CONTROLLER_NOTIFY_TIMEOUT: u32 = 20;
 pub const CONFIG_MB_CONTROLLER_STACK_SIZE: u32 = 4096;
@@ -2766,7 +2766,7 @@ pub const ESP_TASKD_EVENT_STACK: u32 = 2816;
 pub const ESP_TASK_TCPIP_PRIO: u32 = 18;
 pub const ESP_TASK_TCPIP_STACK: u32 = 3584;
 pub const ESP_TASK_MAIN_PRIO: u32 = 1;
-pub const ESP_TASK_MAIN_STACK: u32 = 4096;
+pub const ESP_TASK_MAIN_STACK: u32 = 16896;
 pub const __GNUC_VA_LIST: u32 = 1;
 pub const __SLBF: u32 = 1;
 pub const __SNBF: u32 = 2;
@@ -13146,10 +13146,10 @@ extern "C" {
     pub static Xthal_extra_align: std::os::raw::c_uint;
 }
 extern "C" {
-    pub static mut Xthal_cpregs_size: [std::os::raw::c_uint; 8usize];
+    pub static Xthal_cpregs_size: [std::os::raw::c_uint; 8usize];
 }
 extern "C" {
-    pub static mut Xthal_cpregs_align: [std::os::raw::c_uint; 8usize];
+    pub static Xthal_cpregs_align: [std::os::raw::c_uint; 8usize];
 }
 extern "C" {
     pub static Xthal_all_extra_size: std::os::raw::c_uint;
@@ -13158,7 +13158,7 @@ extern "C" {
     pub static Xthal_all_extra_align: std::os::raw::c_uint;
 }
 extern "C" {
-    pub static mut Xthal_cp_names: [*const std::os::raw::c_char; 8usize];
+    pub static Xthal_cp_names: [*const std::os::raw::c_char; 8usize];
 }
 extern "C" {
     pub fn xthal_init_mem_extra(arg1: *mut std::os::raw::c_void);
@@ -13431,22 +13431,22 @@ extern "C" {
     pub static Xthal_excm_level: std::os::raw::c_uchar;
 }
 extern "C" {
-    pub static mut Xthal_intlevel_mask: [std::os::raw::c_uint; 16usize];
+    pub static Xthal_intlevel_mask: [std::os::raw::c_uint; 16usize];
 }
 extern "C" {
-    pub static mut Xthal_intlevel_andbelow_mask: [std::os::raw::c_uint; 16usize];
+    pub static Xthal_intlevel_andbelow_mask: [std::os::raw::c_uint; 16usize];
 }
 extern "C" {
-    pub static mut Xthal_intlevel: [std::os::raw::c_uchar; 32usize];
+    pub static Xthal_intlevel: [std::os::raw::c_uchar; 32usize];
 }
 extern "C" {
-    pub static mut Xthal_inttype: [std::os::raw::c_uchar; 32usize];
+    pub static Xthal_inttype: [std::os::raw::c_uchar; 32usize];
 }
 extern "C" {
-    pub static mut Xthal_inttype_mask: [std::os::raw::c_uint; 8usize];
+    pub static Xthal_inttype_mask: [std::os::raw::c_uint; 8usize];
 }
 extern "C" {
-    pub static mut Xthal_timer_interrupt: [std::os::raw::c_int; 4usize];
+    pub static Xthal_timer_interrupt: [std::os::raw::c_int; 4usize];
 }
 extern "C" {
     pub fn xthal_get_intenable() -> std::os::raw::c_uint;
@@ -14009,7 +14009,7 @@ extern "C" {
     pub fn ets_post(prio: u8, sig: ETSSignal, par: ETSParam) -> ETS_STATUS;
 }
 extern "C" {
-    pub static mut exc_cause_table: [*const std::os::raw::c_char; 40usize];
+    pub static exc_cause_table: [*const std::os::raw::c_char; 40usize];
 }
 extern "C" {
     pub fn ets_set_user_start(start: u32);
@@ -22333,7 +22333,7 @@ extern "C" {
     pub static mut GPIO: gpio_dev_t;
 }
 extern "C" {
-    pub static mut GPIO_PIN_MUX_REG: [u32; 40usize];
+    pub static GPIO_PIN_MUX_REG: [u32; 40usize];
 }
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -37803,7 +37803,7 @@ pub struct rtc_gpio_desc_t {
     pub rtc_num: std::os::raw::c_int,
 }
 extern "C" {
-    pub static mut rtc_gpio_desc: [rtc_gpio_desc_t; 40usize];
+    pub static rtc_gpio_desc: [rtc_gpio_desc_t; 40usize];
 }
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -44639,7 +44639,7 @@ impl Default for spi_signal_conn_t {
     }
 }
 extern "C" {
-    pub static mut spi_periph_signal: [spi_signal_conn_t; 3usize];
+    pub static spi_periph_signal: [spi_signal_conn_t; 3usize];
 }
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -45147,7 +45147,7 @@ extern "C" {
     pub fn memp_free_pool(desc: *const memp_desc, mem: *mut std::os::raw::c_void);
 }
 extern "C" {
-    pub static mut memp_pools: [*const memp_desc; 19usize];
+    pub static memp_pools: [*const memp_desc; 19usize];
 }
 extern "C" {
     pub fn memp_init();

@@ -64,6 +64,7 @@ CLANG_ARGS="${CLANG_FLAGS} ${CLANG_WARN} ${INCLUDES}"
 
 BINDGEN_FLAGS="--no-doc-comments"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --use-core --ctypes-prefix=std::os::raw"
+BINDGEN_FLAGS="${BINDGEN_FLAGS} --size_t-is-usize"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --builtins"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --conservative-inline-namespaces"
 BINDGEN_FLAGS="${BINDGEN_FLAGS} --distrust-clang-mangling"
