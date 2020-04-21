@@ -75,7 +75,6 @@ use embedded_graphics::{
     Drawing
 };
 
-
 pub struct Display <'a> {
     pub config: Config, // TODO move to driver
     pub frame_buffer: &'a mut [u8],
