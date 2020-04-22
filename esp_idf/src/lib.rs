@@ -25,6 +25,12 @@ pub mod bindings {
         }
     }
     include!("bindings.rs");
+
+    // misc #defines that otherwise get left out
+    pub unsafe fn inet_addr(cp: *const std::os::raw::c_char) -> u32_t {
+        ipaddr_addr(cp)
+    }
+
 }
 
 
@@ -141,6 +147,7 @@ extern "C" {
 pub fn errno() -> cty::c_int {
     unsafe { *bindings::__errno() }
 }
+
 
 
 

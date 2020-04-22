@@ -83,3 +83,26 @@ pub unsafe fn recvfrom(socket: Socket) -> Result<([u8; 128], usize), EspError> {
 
     Ok((rx_buffer, len as usize))
 }
+
+
+pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, port: u16) -> Result<usize, EspError> {
+    let mut dest_addr: idf::sockaddr_in = idf::sockaddr_in::default();
+    dest_addr.sin_addr.s_addr = address;
+    dest_addr.sin_family = family as idf::sa_family_t;
+    dest_addr.sin_port = idf::lwip_htons(port);
+
+    let dest_addr = core::mem::transmute::<&idf::sockaddr_in,
+                                           &idf::sockaddr>(&dest_addr);
+    let socklen: idf::socklen_t = core::mem::size_of::<idf::sockaddr>() as idf::socklen_t;
+
+    let bytes_sent = idf::lwip_sendto(socket,
+                                      buffer.as_ptr() as *const c_void,
+                                      buffer.len(),
+                                      0,
+                                      dest_addr,
+                                      socklen);
+
+    // TODO error handling?
+
+    Ok(bytes_sent)
+}
