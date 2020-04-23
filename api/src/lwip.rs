@@ -104,5 +104,5 @@ pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, p
 
     // TODO error handling?
 
-    Ok(bytes_sent)
+    Ok(bytes_sent as usize)
 }
