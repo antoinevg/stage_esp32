@@ -31,10 +31,10 @@ unsafe impl Codec for Driver {
     fn init(&mut self, config: &Config) -> Result<(), EspError> {
         let port = idf::i2s_port_t::I2S_NUM_0;
 
-        log!(TAG, "initialize audio subsystem with fs:{} block_size:{}", config.fs, config.block_size);
+        log!(TAG, "initialize audio subsystem with fs:{} block_length:{}", config.fs, config.block_length);
 
         // allocate memory for dma buffer
-        let buffer_size = config.block_size * config.word_size;
+        let buffer_size = config.block_length * config.word_size;
         self.dma_buffer_ptr = unsafe {
             idf::calloc(buffer_size as u32,
                         core::mem::size_of::<u8>() as u32) as *mut u8
@@ -46,15 +46,15 @@ unsafe impl Codec for Driver {
 
         // initialize i2s peripheral
         log!(TAG, "initialize i2s peripheral");
-        unsafe { i2s::init(port, config.fs, config.block_size)?; }
+        unsafe { i2s::init(port, config.fs, config.block_length)?; }
 
         Ok(())
     }
 
     fn read(&self, config: &Config, callback_buffer: &mut [f32]) -> Result<(), EspError> {
-        let Config { num_channels, word_size, block_size, .. } = config;
-        let buffer_size = block_size * word_size;
-        let num_frames  = block_size / num_channels;
+        let Config { num_channels, word_size, block_length, .. } = config;
+        let buffer_size = block_length * word_size;
+        let num_frames  = block_length / num_channels;
 
         let dma_buffer = unsafe {
             core::slice::from_raw_parts_mut(self.dma_buffer_ptr, buffer_size)
@@ -102,9 +102,9 @@ unsafe impl Codec for Driver {
     }
 
     fn write(&self, config: &Config, buffer: &Buffer) -> Result<(), EspError> {
-        let Config { num_channels, word_size, block_size, .. } = config;
-        let buffer_size = block_size * word_size;
-        let num_frames  = block_size / num_channels;
+        let Config { num_channels, word_size, block_length, .. } = config;
+        let buffer_size = block_length * word_size;
+        let num_frames  = block_length / num_channels;
 
         let dma_buffer = unsafe {
             core::slice::from_raw_parts_mut(self.dma_buffer_ptr, buffer_size)
@@ -153,7 +153,7 @@ unsafe impl Codec for Driver {
                                     config.fs,
                                     config.num_channels,
                                     config.word_size,
-                                    config.block_size).as_result()
+                                    config.block_length).as_result()
         }
     }
 }
@@ -194,7 +194,7 @@ pub mod i2s {
     static mut QUEUE: Option<idf::QueueHandle_t> = None;
     const QUEUE_TYPE_BASE: u8 = 0;
 
-    pub unsafe fn init(port: i2s_port_t, fs: f32, block_size: usize) -> Result<(), EspError> {
+    pub unsafe fn init(port: i2s_port_t, fs: f32, block_length: usize) -> Result<(), EspError> {
         // configure i2s
         let i2s_config = i2s_config_t {
             mode: i2s_mode_t::I2S_MODE_MASTER
@@ -208,7 +208,7 @@ pub mod i2s {
             communication_format: i2s_comm_format_t::I2S_COMM_FORMAT_I2S_MSB,
             intr_alloc_flags: ESP_INTR_FLAG_LEVEL1 as i32,
             dma_buf_count: 4,
-            dma_buf_len: block_size as i32,
+            dma_buf_len: block_length as i32,
             use_apll: false,
             //fixed_mclk: 12_288_000,
             ..i2s_config_t::default()
@@ -250,7 +250,7 @@ extern "C" {
                                    fs: f32,
                                    num_channels: usize,
                                    word_size: usize,
-                                   block_size: usize) -> idf::esp_err_t;
+                                   block_length: usize) -> idf::esp_err_t;
 }
 
 
@@ -269,8 +269,8 @@ extern "C" fn RUST_api_driver_adac_callback(opaque_interface_ptr: *const OpaqueI
     let config = unsafe { &(*interface_ptr).config };
     let closure = unsafe { &mut (*interface_ptr).closure };
 
-    if buffer_size != config.block_size {
-        panic!("api::driver::adac callback buffer size does not match interface block_size");
+    if buffer_size != config.block_length {
+        panic!("api::driver::adac callback buffer size does not match interface block_length");
     }
     let buffer = unsafe {
         core::slice::from_raw_parts_mut(buffer_ptr, buffer_size)

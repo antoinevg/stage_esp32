@@ -39,12 +39,12 @@ unsafe impl Codec for Driver {
         let i2s_port = idf::i2s_port_t::I2S_NUM_0;
         let i2c_port = idf::i2c_port_t::I2C_NUM_0;
 
-        log!(TAG, "initialize audio subsystem with fs:{} block_size:{}", config.fs, config.block_size);
+        log!(TAG, "initialize audio subsystem with fs:{} block_length:{}", config.fs, config.block_length);
 
         // allocate memory for dma buffer
-        let buffer_size = config.block_size * config.word_size;
+        let buffer_size = config.block_length * config.word_size;
         self.dma_buffer_ptr = unsafe {
-            idf::calloc(config.block_size as u32,
+            idf::calloc(config.block_length as u32,
                         core::mem::size_of::<u16>() as u32) as *mut i16
         };
         if self.dma_buffer_ptr == core::ptr::null_mut() {
@@ -73,12 +73,12 @@ unsafe impl Codec for Driver {
     }
 
     fn read(&self, config: &Config, callback_buffer: &mut [f32]) -> Result<(), EspError> {
-        let Config { num_channels, word_size, block_size, .. } = config;
-        let buffer_size = block_size * word_size;
-        let num_frames  = block_size / num_channels;
+        let Config { num_channels, word_size, block_length, .. } = config;
+        let buffer_size = block_length * word_size;
+        let num_frames  = block_length / num_channels;
 
         let dma_buffer = unsafe {
-            core::slice::from_raw_parts_mut(self.dma_buffer_ptr, *block_size)
+            core::slice::from_raw_parts_mut(self.dma_buffer_ptr, *block_length)
         };
 
         // read audio data from i2s
@@ -116,9 +116,9 @@ unsafe impl Codec for Driver {
     }
 
     fn write(&self, config: &Config, callback_buffer: &[f32]) -> Result<(), EspError> {
-        let Config { num_channels, word_size, block_size, .. } = config;
-        let buffer_size = block_size * word_size;
-        let num_frames  = block_size / num_channels;
+        let Config { num_channels, word_size, block_length, .. } = config;
+        let buffer_size = block_length * word_size;
+        let num_frames  = block_length / num_channels;
 
         let dma_buffer = unsafe {
             core::slice::from_raw_parts_mut(self.dma_buffer_ptr, buffer_size)
@@ -213,7 +213,7 @@ pub mod i2s {
                                 | i2s_comm_format_t::I2S_COMM_FORMAT_I2S_MSB,
             intr_alloc_flags: ESP_INTR_FLAG_LEVEL1 as i32,
             dma_buf_count: 4,
-            dma_buf_len: config.block_size as i32,
+            dma_buf_len: config.block_length as i32,
             use_apll: false,
             ..i2s_config_t::default()
         };

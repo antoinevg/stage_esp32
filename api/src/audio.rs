@@ -36,7 +36,7 @@ pub struct Config {
     pub fs: f32,
     pub num_channels: usize,
     pub word_size: usize,
-    pub block_size: usize,
+    pub block_length: usize,
 }
 
 
@@ -52,13 +52,13 @@ pub struct Interface<'a, D> {
 
 impl<'a, D> Interface<'a, D>
 where D: driver::Codec {
-    pub fn new<F: FnMut(f32, usize, &mut Buffer) + 'a>(fs: f32, block_size: usize, closure: F) -> Interface<'a, D> {
+    pub fn new<F: FnMut(f32, usize, &mut Buffer) + 'a>(fs: f32, block_length: usize, closure: F) -> Interface<'a, D> {
         Interface {
             config: Config {
                 fs: fs,
                 num_channels: 2,
                 word_size: 2,
-                block_size: block_size,
+                block_length: block_length,
             },
             driver: D::new(),
             closure: Box::new(closure),
@@ -133,15 +133,15 @@ where D: driver::Codec {
             idf::uxTaskGetStackHighWaterMark(core::ptr::null_mut())
         });
 
-        let Config { fs, num_channels, word_size, block_size } = self.config;
-        let buffer_size = block_size * word_size;
-        let num_frames  = block_size / num_channels;
+        let Config { fs, num_channels, word_size, block_length } = self.config;
+        let buffer_size = block_length * word_size;
+        let num_frames  = block_length / num_channels;
 
         // allocate memory for callback buffer
         // TODO try `heap_caps_aligned_alloc` once we can build against esp-idf master again
         //      https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/mem_alloc.html
         let buffer_ptr = unsafe {
-            idf::calloc(block_size as u32,
+            idf::calloc(block_length as u32,
                         core::mem::size_of::<f32>() as u32) as *mut f32
         };
         if buffer_ptr == core::ptr::null_mut() {
@@ -150,7 +150,7 @@ where D: driver::Codec {
         log!(TAG, "allocated memory for callback buffer: {} bytes", buffer_size);
 
         // tell main task that the thread has started
-        log!(TAG, "starting audio with fs: {} blocksize: {}", fs, block_size);
+        log!(TAG, "starting audio with fs: {} blocksize: {}", fs, block_length);
         unsafe {
             idf::xTaskNotify(self.task_root, CODEC_NOTIFY_BIT_THREAD_READY,
                              idf::eNotifyAction::eSetValueWithOverwrite);
@@ -167,7 +167,7 @@ where D: driver::Codec {
         let mut mux: idf::portMUX_TYPE = portMUX_INITIALIZER_UNLOCKED;
         loop {
             let mut buffer: &mut Buffer = unsafe {
-                core::slice::from_raw_parts_mut(buffer_ptr, block_size)
+                core::slice::from_raw_parts_mut(buffer_ptr, block_length)
             };
 
             // read buffer from driver
