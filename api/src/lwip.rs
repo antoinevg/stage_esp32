@@ -82,6 +82,7 @@ pub unsafe fn recvfrom(socket: Socket) -> Result<([u8; 128], usize), EspError> {
     Ok((rx_buffer, len as usize))
 }
 
+static mut ERROR_COUNT: usize = 0;
 
 pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, port: u16) -> Result<isize, EspError> {
     let mut dest_addr: idf::sockaddr_in = idf::sockaddr_in::default();
@@ -102,16 +103,30 @@ pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, p
 
 
     if bytes_sent < 1 {
-        log!(TAG, "sendto error: {} (sent {} bytes)", errno(), bytes_sent);
+        ERROR_COUNT += 1;
+        log!(TAG, "sendto error #{}: {} (sent {} bytes)", ERROR_COUNT, errno(), bytes_sent);
         let error_number = errno() as u32;
         if  error_number == idf::ENOMEM {
             // see: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/lwip.html#limitations
-            //idf::vTaskDelay(1);
-            return sendto(socket, buffer, address, family, port);
+            let mut counter = 0;
+            loop  {
+                counter += 1;
+                let bytes_sent = idf::lwip_sendto(socket,
+                                                  buffer.as_ptr() as *const c_void,
+                                                  buffer.len(),
+                                                  0,
+                                                  dest_addr,
+                                                  socklen);
+                if bytes_sent > 0 {
+                    log!(TAG, "sendto succeeded after {} retries", counter);
+                    return Ok(bytes_sent);
+                }
+                idf::vTaskDelay(1);
+            }
         }
     }
 
     // TODO handle rest of errors
 
-    Ok(bytes_sent as isize)
+    Ok(bytes_sent)
 }
