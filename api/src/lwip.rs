@@ -51,14 +51,14 @@ pub unsafe fn bind(socket: Socket, address: u32, family: u32, port: u16) -> Resu
 
 
 pub unsafe fn recvfrom(socket: Socket) -> Result<([u8; 128], usize), EspError> {
-    let mut rx_buffer:[u8; 128] = [0; 128];
+    let mut rx_buffer:[u8; 128] = [0; 128]; // TODO supply receive buffer in arguments
 
     let mut source_addr: idf::sockaddr_in = idf::sockaddr_in::default();
     let mut socklen: idf::socklen_t = core::mem::size_of::<idf::sockaddr_in>() as idf::socklen_t;
 
     let len = idf::lwip_recvfrom(socket,
                                  rx_buffer.as_mut_ptr() as *mut c_void,
-                                 rx_buffer.len() - 1,
+                                 rx_buffer.len(),
                                  0,
                                  core::mem::transmute::<&mut idf::sockaddr_in,
                                                         &mut idf::sockaddr>(&mut source_addr),
@@ -68,10 +68,8 @@ pub unsafe fn recvfrom(socket: Socket) -> Result<([u8; 128], usize), EspError> {
         return Err(EspError(errno() as idf::esp_err_t)); // TODO we need an errno field on EspError
     }
 
-    rx_buffer[len as usize] = 0;
-
     // log source ip_address
-    let addr: idf::ip4_addr = idf::ip4_addr {
+    /*let addr: idf::ip4_addr = idf::ip4_addr {
         addr: source_addr.sin_addr.s_addr
     };
     let mut ip_address:[u8; 128] = [0; 128];
@@ -79,13 +77,13 @@ pub unsafe fn recvfrom(socket: Socket) -> Result<([u8; 128], usize), EspError> {
                         ip_address.as_mut_ptr() as *mut i8,
                         (ip_address.len() - 1) as i32);
     let ip_address  = CStr::from_ptr(ip_address.as_ptr() as *const c_char).to_str().unwrap();
-    //log!(TAG, "received {} bytes from {}", len, ip_address);
+    log!(TAG, "received {} bytes from {}", len, ip_address);*/
 
     Ok((rx_buffer, len as usize))
 }
 
 
-pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, port: u16) -> Result<usize, EspError> {
+pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, port: u16) -> Result<isize, EspError> {
     let mut dest_addr: idf::sockaddr_in = idf::sockaddr_in::default();
     dest_addr.sin_addr.s_addr = address;
     dest_addr.sin_family = family as idf::sa_family_t;
@@ -102,7 +100,18 @@ pub unsafe fn sendto(socket: Socket, buffer: &[u8], address: u32, family: u32, p
                                       dest_addr,
                                       socklen);
 
-    // TODO error handling?
 
-    Ok(bytes_sent as usize)
+    if bytes_sent < 1 {
+        log!(TAG, "sendto error: {} (sent {} bytes)", errno(), bytes_sent);
+        let error_number = errno() as u32;
+        if  error_number == idf::ENOMEM {
+            // see: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/lwip.html#limitations
+            //idf::vTaskDelay(1);
+            return sendto(socket, buffer, address, family, port);
+        }
+    }
+
+    // TODO handle rest of errors
+
+    Ok(bytes_sent as isize)
 }
